@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro del Paciente · Portal de Bienestar Psicológico</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  /* ==========================================================================
+     GUÍA DE ESTILOS — Portal de Registro del Paciente
+     (mismos tokens que el Portal del Psicólogo, para consistencia institucional)
+     ==========================================================================
+     COLOR (paleta base sin cambios)
+       --bg #F7F8F6 · --surface #FFFFFF · --ink #16212B · --ink-muted #5B6B75
+       --primary #1B3A57 (azul marino) · --primary-hover #14293F · --primary-soft #E7EDF2
+       --success #3F7A5D (verde bosque, solo confirmaciones) · --success-soft #E7F1EC
+       --border #E3E7E5
+
+     TIPOGRAFÍA
+       Encabezados 'Plus Jakarta Sans' 700–800, tracking negativo (autoridad visual)
+       Cuerpo/UI 'Inter' 400–600, leading generoso para lectura fluida
+
+     FORMA
+       Radios 20px tarjeta · 12px inputs/botones · sombras difusas de tres capas
+     ========================================================================== */
+  :root{
+    --bg:#F7F8F6; --surface:#FFFFFF; --ink:#16212B; --ink-muted:#5B6B75;
+    --primary:#1B3A57; --primary-hover:#14293F; --primary-soft:#E7EDF2;
+    --success:#3F7A5D; --success-soft:#E7F1EC;
+    --danger:#B3413B; --danger-soft:#FBEAE8;
+    --border:#E3E7E5;
+    --ease: cubic-bezier(.4,0,.2,1);
+    --shadow-card:
+      0 1px 1px rgba(22,33,43,.02),
+      0 2px 6px rgba(22,33,43,.03),
+      0 24px 48px -24px rgba(22,33,43,.16);
+    --shadow-card-hover:
+      0 1px 1px rgba(22,33,43,.02),
+      0 4px 10px rgba(22,33,43,.04),
+      0 32px 64px -28px rgba(22,33,43,.20);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    line-height:1.55;
+  }
+  .font-display{ font-family:'Plus Jakarta Sans',sans-serif; letter-spacing:-.02em; }
+  .card{
+    background:var(--surface); border:1px solid var(--border);
+    box-shadow:var(--shadow-card); transition:box-shadow .3s var(--ease);
+  }
+  .tab-strip{ background:var(--primary); position:relative; }
+  .tab-strip::after{
+    content:''; position:absolute; inset:auto 0 0 0; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+  }
+  input, select{
+    border:1px solid var(--border); background:#fff; color:var(--ink);
+    box-shadow: inset 0 1px 2px rgba(22,33,43,.02);
+    transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  input:hover, select:hover{ border-color:#CBD3D0; }
+  input:focus, select:focus{
+    outline:none; border-color:var(--primary); box-shadow:0 0 0 4px var(--primary-soft);
+  }
+  .btn-primary{
+    background:var(--primary); color:#fff;
+    box-shadow:0 1px 2px rgba(27,58,87,.15), 0 12px 24px -12px rgba(27,58,87,.45);
+    transition:background .2s var(--ease), transform .18s var(--ease), box-shadow .2s var(--ease);
+  }
+  .btn-primary:hover{ background:var(--primary-hover); transform:translateY(-1.5px); box-shadow:0 2px 4px rgba(27,58,87,.18), 0 18px 32px -14px rgba(27,58,87,.5); }
+  .btn-primary:active{ transform:translateY(0) scale(.99); }
+  .btn-primary:disabled{ opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
+  .field-label{ font-size:.6875rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-muted); font-weight:700; }
+  .id-stamp{
+    border:1px solid rgba(255,255,255,.22); color:#fff; background:rgba(255,255,255,.06);
+    backdrop-filter:blur(6px);
+    font-family:'Plus Jakarta Sans',sans-serif; letter-spacing:.08em;
+  }
+
+  /* Transición: la ficha se desvanece y da paso a la confirmación */
+  .ficha-panel{ transition:opacity .38s var(--ease), transform .38s var(--ease); }
+  .ficha-panel.ficha-saliendo{ opacity:0; transform:translateY(-12px) scale(.985); pointer-events:none; }
+  .success-panel{ opacity:0; transform:translateY(12px); transition:opacity .45s var(--ease) .12s, transform .45s var(--ease) .12s; }
+  .success-panel.success-visible{ opacity:1; transform:translateY(0); }
+  .success-icon-ring{ background:var(--success-soft); box-shadow:0 0 0 8px rgba(63,122,93,.06); }
+  .success-check{ stroke:var(--success); }
+  .error-banner{ background:var(--danger-soft); color:var(--danger); border:1px solid rgba(179,65,59,.18); }
+</style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Franja superior institucional -->
+  <div class="tab-strip text-white">
+    <div class="max-w-3xl mx-auto px-6 sm:px-8 py-7 flex items-center justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-[.12em] text-white/55 font-semibold">Portal del Paciente</p>
+        <h1 class="font-display text-[1.85rem] sm:text-3xl font-extrabold mt-1">Registro de Datos Generales</h1>
+      </div>
+      <div class="id-stamp rounded-xl px-3.5 py-2.5 text-xs hidden sm:block">
+        Ficha N.º ————
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-3xl mx-auto px-6 sm:px-8 py-14">
+
+    <div id="errorBox" class="hidden mb-6 rounded-xl px-4 py-3.5 text-sm font-medium error-banner"></div>
+
+    <!-- ============ CONTENEDOR: se alterna entre la ficha y la confirmación ============ -->
+    <div class="relative">
+
+      <!-- FICHA -->
+      <form id="registroForm" class="ficha-panel card rounded-[28px] p-8 sm:p-12 space-y-10">
+
+        <section>
+          <h2 class="font-display text-xl font-bold tracking-tight mb-2">Identificación</h2>
+          <p class="text-sm text-[var(--ink-muted)] leading-relaxed mb-5">Estos datos se usarán para vincular tus sesiones y evaluaciones.</p>
+          <div class="grid sm:grid-cols-2 gap-6">
+            <div>
+              <label class="field-label" for="dni">DNI *</label>
+              <input required id="dni" name="dni" maxlength="15" inputmode="numeric"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Ej. 70123456">
+            </div>
+            <div>
+              <label class="field-label" for="fecha_nacimiento">Fecha de nacimiento *</label>
+              <input required id="fecha_nacimiento" name="fecha_nacimiento" type="date"
+                class="mt-2 w-full rounded-xl px-3.5 py-3">
+            </div>
+            <div>
+              <label class="field-label" for="apellidos">Apellidos *</label>
+              <input required id="apellidos" name="apellidos"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Apellido paterno y materno">
+            </div>
+            <div>
+              <label class="field-label" for="nombres">Nombres *</label>
+              <input required id="nombres" name="nombres"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Nombres completos">
+            </div>
+            <div class="sm:col-span-2 flex items-center gap-3 rounded-xl px-5 py-4" style="background:var(--primary-soft)">
+              <span class="field-label !text-[var(--primary)]">Edad calculada</span>
+              <span id="edadCalculada" class="font-display text-xl font-bold text-[var(--primary)]">—</span>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="font-display text-xl font-bold tracking-tight mb-2">Contacto</h2>
+          <div class="grid sm:grid-cols-2 gap-6 mt-4">
+            <div>
+              <label class="field-label" for="celular">Celular *</label>
+              <input required id="celular" name="celular" type="tel"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="9XX XXX XXX">
+            </div>
+            <div>
+              <label class="field-label" for="correo">Correo electrónico *</label>
+              <input required id="correo" name="correo" type="email"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="nombre@correo.com">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="field-label" for="telefono_emergencia">Teléfono de emergencia *</label>
+              <input required id="telefono_emergencia" name="telefono_emergencia" type="tel"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Contacto de un familiar">
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="font-display text-xl font-bold tracking-tight mb-2">Datos académicos</h2>
+          <div class="grid sm:grid-cols-2 gap-6 mt-4">
+            <div>
+              <label class="field-label" for="institucion">Institución *</label>
+              <select required id="institucion" name="institucion" class="mt-2 w-full rounded-xl px-3.5 py-3">
+                <option value="" disabled selected>Selecciona tu institución</option>
+                <option>UTP</option>
+                <option>USS</option>
+                <option>Senati</option>
+                <option>Cetemin</option>
+                <option>Valle Grande</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="ciclo">Ciclo *</label>
+              <input required id="ciclo" name="ciclo"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Ej. V">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="field-label" for="carrera">Carrera *</label>
+              <input required id="carrera" name="carrera"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Ej. Ingeniería de Sistemas">
+            </div>
+          </div>
+        </section>
+
+        <button type="submit" id="submitBtn"
+          class="btn-primary w-full rounded-xl py-3.5 font-semibold text-sm tracking-wide">
+          Guardar mi registro
+        </button>
+      </form>
+
+      <!-- CONFIRMACIÓN: reemplaza a la ficha por completo -->
+      <div id="successPanel" class="success-panel hidden absolute inset-0 flex flex-col items-center justify-center text-center py-20">
+        <div class="success-icon-ring w-20 h-20 rounded-full flex items-center justify-center mb-6">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path class="success-check" d="M5 13l4 4L19 7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="font-display text-3xl font-bold">Registro guardado correctamente.</p>
+      </div>
+
+    </div>
+  </main>
+
+<script>
+  // ============================================================================
+  // CONFIGURACIÓN DE SUPABASE (archivo autocontenido, sin dependencias externas)
+  // ============================================================================
+  const SUPABASE_URL = "https://dqmrwwhjjxzedxyomcwg.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbXJ3d2hqanh6ZWR4eW9tY3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNDc1NTQsImV4cCI6MjEwMTcyMzU1NH0.SKhvYu3Eg5MsiYgl9s6nWmFXptIspn-Zt6R0_wIbDWk";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script>
+  const fechaInput = document.getElementById('fecha_nacimiento');
+  const edadEl = document.getElementById('edadCalculada');
+
+  function calcularEdad(fechaStr){
+    if(!fechaStr) return null;
+    const hoy = new Date();
+    const nac = new Date(fechaStr + 'T00:00:00');
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+  }
+
+  fechaInput.addEventListener('input', () => {
+    const edad = calcularEdad(fechaInput.value);
+    edadEl.textContent = (edad !== null && edad >= 0 && edad < 120) ? `${edad} años` : '—';
+  });
+
+  function mostrarError(msg){
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.remove('hidden');
+    box.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  function ocultarError(){
+    document.getElementById('errorBox').classList.add('hidden');
+  }
+
+  document.getElementById('registroForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    ocultarError();
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+
+    const form = e.target;
+    const payload = {
+      dni: form.dni.value.trim(),
+      apellidos: form.apellidos.value.trim(),
+      nombres: form.nombres.value.trim(),
+      fecha_nacimiento: form.fecha_nacimiento.value,
+      celular: form.celular.value.trim(),
+      correo: form.correo.value.trim(),
+      institucion: form.institucion.value,
+      carrera: form.carrera.value.trim(),
+      ciclo: form.ciclo.value.trim(),
+      telefono_emergencia: form.telefono_emergencia.value.trim(),
+    };
+
+    const { error } = await supabaseClient.from('estudiantes').upsert(payload, { onConflict: 'dni' });
+
+    btn.disabled = false;
+    btn.textContent = 'Guardar mi registro';
+
+    if (error) {
+      console.error(error);
+      mostrarError('No se pudo guardar tu registro: ' + error.message);
+      return;
+    }
+
+    // La ficha se desvanece por completo y da paso a la confirmación
+    const ficha = document.getElementById('registroForm');
+    const exito = document.getElementById('successPanel');
+
+    ficha.classList.add('ficha-saliendo');
+
+    setTimeout(() => {
+      ficha.classList.add('hidden');
+      exito.classList.remove('hidden');
+      requestAnimationFrame(() => exito.classList.add('success-visible'));
+    }, 320);
+  });
+</script>
+</body>
+</html>
