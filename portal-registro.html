@@ -170,6 +170,40 @@
         </section>
 
         <section>
+          <h2 class="font-display text-xl font-bold tracking-tight mb-2">Vivienda y convivencia</h2>
+          <p class="text-sm text-[var(--ink-muted)] leading-relaxed mb-5">Esta información nos ayuda a comprender mejor tu contexto actual.</p>
+          <div class="grid sm:grid-cols-2 gap-6">
+            <div class="sm:col-span-2">
+              <label class="field-label" for="modalidad_vivienda">Modalidad de alojamiento actual *</label>
+              <select required id="modalidad_vivienda" name="modalidad_vivienda" class="mt-2 w-full rounded-xl px-3.5 py-3">
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option>Casa o cuarto alquilado</option>
+                <option>Vivienda de algún familiar</option>
+                <option>Vivienda propia</option>
+              </select>
+            </div>
+            <div id="grupoMontoAlquiler" class="sm:col-span-2 hidden">
+              <label class="field-label" for="monto_alquiler">Monto mensual de alquiler (S/) *</label>
+              <input id="monto_alquiler" name="monto_alquiler" type="number" min="0" step="0.01"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Ej. 450">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="field-label" for="convivencia">¿Vive solo o con alguien? *</label>
+              <select required id="convivencia" name="convivencia" class="mt-2 w-full rounded-xl px-3.5 py-3">
+                <option value="" disabled selected>Selecciona una opción</option>
+                <option>Vive solo</option>
+                <option>Con alguien</option>
+              </select>
+            </div>
+            <div id="grupoConvivenciaDetalle" class="sm:col-span-2 hidden">
+              <label class="field-label" for="convivencia_detalle">¿Con quién vive? *</label>
+              <input id="convivencia_detalle" name="convivencia_detalle"
+                class="mt-2 w-full rounded-xl px-3.5 py-3" placeholder="Ej. Con sus padres, con un familiar, con amigos...">
+            </div>
+          </div>
+        </section>
+
+        <section>
           <h2 class="font-display text-xl font-bold tracking-tight mb-2">Datos académicos</h2>
           <div class="grid sm:grid-cols-2 gap-6 mt-4">
             <div>
@@ -242,6 +276,28 @@
     edadEl.textContent = (edad !== null && edad >= 0 && edad < 120) ? `${edad} años` : '—';
   });
 
+  // ---------- Campos dinámicos: vivienda y convivencia ----------
+  const selModalidadVivienda = document.getElementById('modalidad_vivienda');
+  const grupoMontoAlquiler = document.getElementById('grupoMontoAlquiler');
+  const inputMontoAlquiler = document.getElementById('monto_alquiler');
+  const selConvivencia = document.getElementById('convivencia');
+  const grupoConvivenciaDetalle = document.getElementById('grupoConvivenciaDetalle');
+  const inputConvivenciaDetalle = document.getElementById('convivencia_detalle');
+
+  selModalidadVivienda.addEventListener('change', () => {
+    const esAlquilado = selModalidadVivienda.value === 'Casa o cuarto alquilado';
+    grupoMontoAlquiler.classList.toggle('hidden', !esAlquilado);
+    inputMontoAlquiler.required = esAlquilado;
+    if (!esAlquilado) inputMontoAlquiler.value = '';
+  });
+
+  selConvivencia.addEventListener('change', () => {
+    const conAlguien = selConvivencia.value === 'Con alguien';
+    grupoConvivenciaDetalle.classList.toggle('hidden', !conAlguien);
+    inputConvivenciaDetalle.required = conAlguien;
+    if (!conAlguien) inputConvivenciaDetalle.value = '';
+  });
+
   function mostrarError(msg){
     const box = document.getElementById('errorBox');
     box.textContent = msg;
@@ -272,6 +328,11 @@
       carrera: form.carrera.value.trim(),
       ciclo: form.ciclo.value.trim(),
       telefono_emergencia: form.telefono_emergencia.value.trim(),
+      modalidad_vivienda: form.modalidad_vivienda.value,
+      monto_alquiler: form.modalidad_vivienda.value === 'Casa o cuarto alquilado' && form.monto_alquiler.value !== ''
+        ? Number(form.monto_alquiler.value) : null,
+      convivencia: form.convivencia.value,
+      convivencia_detalle: form.convivencia.value === 'Con alguien' ? form.convivencia_detalle.value.trim() : null,
     };
 
     const { error } = await supabaseClient.from('estudiantes').upsert(payload, { onConflict: 'dni' });
