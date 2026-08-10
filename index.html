@@ -470,6 +470,14 @@
             </select></div>
           <div id="campoGrupoMontoAlquiler" class="sm:col-span-2 hidden"><label class="field-label">Monto mensual de alquiler (S/) *</label>
             <input name="monto_alquiler" id="campoMontoAlquiler" type="number" min="0" step="0.01" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div id="campoGrupoPagaAlquilerFamiliar" class="sm:col-span-2 hidden"><label class="field-label">¿Paga algún alquiler por el espacio que ocupa? *</label>
+            <select name="paga_alquiler_familiar" id="campoPagaAlquilerFamiliar" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
+              <option value="" disabled selected>Selecciona</option>
+              <option>Sí</option>
+              <option>No</option>
+            </select></div>
+          <div id="campoGrupoMontoAlquilerFamiliar" class="sm:col-span-2 hidden"><label class="field-label">Monto mensual que paga (S/) *</label>
+            <input name="monto_alquiler_familiar" id="campoMontoAlquilerFamiliar" type="number" min="0" step="0.01" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
           <div class="sm:col-span-2"><label class="field-label">¿Vive solo o con alguien? *</label>
             <select required name="convivencia" id="campoConvivencia" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
               <option value="" disabled selected>Selecciona</option>
@@ -811,6 +819,10 @@
   const campoModalidadVivienda = $('campoModalidadVivienda');
   const campoGrupoMontoAlquiler = $('campoGrupoMontoAlquiler');
   const campoMontoAlquiler = $('campoMontoAlquiler');
+  const campoGrupoPagaAlquilerFamiliar = $('campoGrupoPagaAlquilerFamiliar');
+  const campoPagaAlquilerFamiliar = $('campoPagaAlquilerFamiliar');
+  const campoGrupoMontoAlquilerFamiliar = $('campoGrupoMontoAlquilerFamiliar');
+  const campoMontoAlquilerFamiliar = $('campoMontoAlquilerFamiliar');
   const campoConvivencia = $('campoConvivencia');
   const campoGrupoConvivenciaDetalle = $('campoGrupoConvivenciaDetalle');
   const campoConvivenciaDetalle = $('campoConvivenciaDetalle');
@@ -820,6 +832,23 @@
     campoGrupoMontoAlquiler.classList.toggle('hidden', !esAlquilado);
     campoMontoAlquiler.required = esAlquilado;
     if (!esAlquilado) campoMontoAlquiler.value = '';
+
+    const esFamiliar = campoModalidadVivienda.value === 'Vivienda de algún familiar';
+    campoGrupoPagaAlquilerFamiliar.classList.toggle('hidden', !esFamiliar);
+    campoPagaAlquilerFamiliar.required = esFamiliar;
+    if (!esFamiliar) {
+      campoPagaAlquilerFamiliar.value = '';
+      campoGrupoMontoAlquilerFamiliar.classList.add('hidden');
+      campoMontoAlquilerFamiliar.required = false;
+      campoMontoAlquilerFamiliar.value = '';
+    }
+  });
+
+  campoPagaAlquilerFamiliar.addEventListener('change', () => {
+    const paga = campoPagaAlquilerFamiliar.value === 'Sí';
+    campoGrupoMontoAlquilerFamiliar.classList.toggle('hidden', !paga);
+    campoMontoAlquilerFamiliar.required = paga;
+    if (!paga) campoMontoAlquilerFamiliar.value = '';
   });
 
   campoConvivencia.addEventListener('change', () => {
@@ -833,6 +862,14 @@
     const esAlquilado = campoModalidadVivienda.value === 'Casa o cuarto alquilado';
     campoGrupoMontoAlquiler.classList.toggle('hidden', !esAlquilado);
     campoMontoAlquiler.required = esAlquilado;
+
+    const esFamiliar = campoModalidadVivienda.value === 'Vivienda de algún familiar';
+    campoGrupoPagaAlquilerFamiliar.classList.toggle('hidden', !esFamiliar);
+    campoPagaAlquilerFamiliar.required = esFamiliar;
+    const pagaFamiliar = campoPagaAlquilerFamiliar.value === 'Sí';
+    campoGrupoMontoAlquilerFamiliar.classList.toggle('hidden', !(esFamiliar && pagaFamiliar));
+    campoMontoAlquilerFamiliar.required = esFamiliar && pagaFamiliar;
+
     const conAlguien = campoConvivencia.value === 'Con alguien';
     campoGrupoConvivenciaDetalle.classList.toggle('hidden', !conAlguien);
     campoConvivenciaDetalle.required = conAlguien;
@@ -882,6 +919,11 @@
       modalidad_vivienda: f.modalidad_vivienda.value,
       monto_alquiler: f.modalidad_vivienda.value === 'Casa o cuarto alquilado' && f.monto_alquiler.value !== ''
         ? Number(f.monto_alquiler.value) : null,
+      paga_alquiler_familiar: f.modalidad_vivienda.value === 'Vivienda de algún familiar'
+        ? f.paga_alquiler_familiar.value : null,
+      monto_alquiler_familiar: f.modalidad_vivienda.value === 'Vivienda de algún familiar'
+        && f.paga_alquiler_familiar.value === 'Sí' && f.monto_alquiler_familiar.value !== ''
+        ? Number(f.monto_alquiler_familiar.value) : null,
       convivencia: f.convivencia.value,
       convivencia_detalle: f.convivencia.value === 'Con alguien' ? f.convivencia_detalle.value.trim() : null,
     };
@@ -956,12 +998,19 @@
     ].join('');
 
     const esAlquilado = e.modalidad_vivienda === 'Casa o cuarto alquilado';
+    const esFamiliar = e.modalidad_vivienda === 'Vivienda de algún familiar';
     const conAlguien = e.convivencia === 'Con alguien';
     const viviendaItems = [
       identItem('Modalidad de alojamiento', e.modalidad_vivienda),
     ];
     if (esAlquilado) {
       viviendaItems.push(identItem('Monto mensual de alquiler', e.monto_alquiler != null ? `S/ ${Number(e.monto_alquiler).toFixed(2)}` : '—'));
+    }
+    if (esFamiliar) {
+      viviendaItems.push(identItem('¿Paga algún alquiler?', e.paga_alquiler_familiar || '—'));
+      if (e.paga_alquiler_familiar === 'Sí') {
+        viviendaItems.push(identItem('Monto mensual que paga', e.monto_alquiler_familiar != null ? `S/ ${Number(e.monto_alquiler_familiar).toFixed(2)}` : '—'));
+      }
     }
     viviendaItems.push(identItem('¿Vive solo o con alguien?', e.convivencia));
     if (conAlguien) {
