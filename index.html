@@ -57,6 +57,7 @@
   body{
     background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
     -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.5;
+    padding-bottom:2.75rem;
   }
   .font-display{ font-family:'Plus Jakarta Sans',sans-serif; letter-spacing:-.02em; }
   .font-mono{ font-family:'JetBrains Mono',monospace; }
@@ -234,23 +235,31 @@
 
       <div class="card rounded-[22px] shadow-sm p-6 mb-6 flex flex-wrap items-center gap-x-10 gap-y-3">
         <div>
-          <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Nombre completo</p>
+          <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Apellidos y Nombres</p>
           <p id="perfilNombre" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p>
         </div>
         <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Edad</p><p id="perfilEdad" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p></div>
-        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Institución</p><p id="perfilInstitucion" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p></div>
+        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">DNI</p><p id="perfilDni" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p></div>
+        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Institución</p><p id="perfilInstitucion" class="text-lg font-medium"></p></div>
         <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Carrera</p><p id="perfilCarrera" class="text-lg font-medium"></p></div>
         <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Ciclo</p><p id="perfilCiclo" class="text-lg font-medium"></p></div>
+        <button id="btnVerDatosPerfil" class="ml-auto btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold inline-flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Ver datos completos
+        </button>
+      </div>
+
+      <div class="card rounded-[22px] p-6 mb-6 flex flex-wrap items-center justify-between gap-4" style="border:1px solid var(--primary-soft); background:linear-gradient(180deg, var(--primary-soft) 0%, var(--surface) 60%);">
         <div>
-          <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold mb-1.5">Estado actual</p>
-          <select id="perfilEstadoActual" class="rounded-xl px-3 py-2 text-sm font-semibold">
-            <option value="Estable">Estable</option>
-            <option value="En proceso de adaptación">En proceso de adaptación</option>
-            <option value="En observación">En observación</option>
-            <option value="Requiere atención regular">Requiere atención regular</option>
-          </select>
+          <p class="text-xs uppercase tracking-[.12em] font-bold" style="color:var(--primary)">Estado Emocional Actual</p>
+          <p class="text-xs text-[var(--ink-muted)] mt-0.5">Actualiza el seguimiento clínico del estudiante</p>
         </div>
-        <div class="ml-auto font-mono text-xs text-[var(--ink-muted)]">DNI <span id="perfilDni" class="text-[var(--ink)] font-semibold"></span></div>
+        <select id="perfilEstadoActual" class="rounded-xl px-4 py-2.5 text-sm font-semibold min-w-[220px]">
+          <option value="EST">EST (Estable)</option>
+          <option value="EPA">EPA (En proceso de adaptación)</option>
+          <option value="RS">RS (Requiere seguimiento)</option>
+          <option value="EO">EO (En observación)</option>
+        </select>
       </div>
 
       <div class="flex gap-1 border-b mb-6" style="border-color:var(--border)">
@@ -452,6 +461,23 @@
             <input required name="ciclo" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
           <div class="sm:col-span-2"><label class="field-label">Carrera *</label>
             <input required name="carrera" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div class="sm:col-span-2"><label class="field-label">Modalidad de alojamiento actual *</label>
+            <select required name="modalidad_vivienda" id="campoModalidadVivienda" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
+              <option value="" disabled selected>Selecciona</option>
+              <option>Casa o cuarto alquilado</option>
+              <option>Vivienda de algún familiar</option>
+              <option>Vivienda propia</option>
+            </select></div>
+          <div id="campoGrupoMontoAlquiler" class="sm:col-span-2 hidden"><label class="field-label">Monto mensual de alquiler (S/) *</label>
+            <input name="monto_alquiler" id="campoMontoAlquiler" type="number" min="0" step="0.01" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div class="sm:col-span-2"><label class="field-label">¿Vive solo o con alguien? *</label>
+            <select required name="convivencia" id="campoConvivencia" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
+              <option value="" disabled selected>Selecciona</option>
+              <option>Vive solo</option>
+              <option>Con alguien</option>
+            </select></div>
+          <div id="campoGrupoConvivenciaDetalle" class="sm:col-span-2 hidden"><label class="field-label">¿Con quién vive? *</label>
+            <input name="convivencia_detalle" id="campoConvivenciaDetalle" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
           <div class="sm:col-span-2 flex justify-end gap-3 mt-2">
             <button type="button" class="cerrar-modal btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Cancelar</button>
             <button type="submit" id="btnGuardarEstudiante" class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Guardar</button>
@@ -469,6 +495,43 @@
         <p class="font-display text-2xl font-bold">Registro guardado correctamente.</p>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ============ MODAL: VER DATOS COMPLETOS DEL ESTUDIANTE ============ -->
+  <div id="modalVerDatos" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-40 no-print">
+    <div class="card modal-panel rounded-[22px] w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-display text-xl font-bold tracking-tight">Ficha completa del estudiante</h3>
+        <button class="cerrar-modal text-[var(--ink-muted)] hover:text-[var(--ink)] text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <h4 class="field-label mb-3" style="color:var(--primary)">Identificación</h4>
+          <div class="doc-ident-grid" id="verDatosIdentificacion"></div>
+        </div>
+        <div>
+          <h4 class="field-label mb-3" style="color:var(--primary)">Contacto</h4>
+          <div class="doc-ident-grid" id="verDatosContacto"></div>
+        </div>
+        <div>
+          <h4 class="field-label mb-3" style="color:var(--primary)">Datos académicos</h4>
+          <div class="doc-ident-grid" id="verDatosAcademicos"></div>
+        </div>
+        <div>
+          <h4 class="field-label mb-3" style="color:var(--primary)">Vivienda y convivencia</h4>
+          <div class="doc-ident-grid" id="verDatosVivienda"></div>
+        </div>
+        <div>
+          <h4 class="field-label mb-3" style="color:var(--primary)">Seguimiento clínico</h4>
+          <div class="doc-ident-grid" id="verDatosEstado"></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-6">
+        <button class="cerrar-modal btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Cerrar</button>
+      </div>
     </div>
   </div>
 
@@ -673,17 +736,30 @@
     sel.value = actual;
   }
 
+  // Estados clínicos: códigos cortos + compatibilidad con valores antiguos guardados en Supabase
+  const ESTADOS_INFO = {
+    'EST': { label: 'EST (Estable)', estilo: 'background:var(--success-soft); color:var(--success);' },
+    'EPA': { label: 'EPA (En proceso de adaptación)', estilo: 'background:var(--primary-soft); color:var(--primary);' },
+    'RS':  { label: 'RS (Requiere seguimiento)', estilo: 'background:var(--danger-soft); color:var(--danger);' },
+    'EO':  { label: 'EO (En observación)', estilo: 'background:#FCF3DA; color:#8A6212;' },
+  };
+  const ESTADO_LEGADO = {
+    'Estable': 'EST',
+    'En proceso de adaptación': 'EPA',
+    'En observación': 'EO',
+    'Requiere atención regular': 'RS',
+  };
+  function normalizarEstado(valor){
+    if (!valor) return 'EST';
+    if (ESTADOS_INFO[valor]) return valor;
+    return ESTADO_LEGADO[valor] || 'EST';
+  }
+
   // Colores y etiqueta por estado clínico actual
   function estadoBadgeHTML(estado){
-    const valor = estado || 'Estable';
-    const estilos = {
-      'Estable': 'background:var(--success-soft); color:var(--success);',
-      'En proceso de adaptación': 'background:var(--primary-soft); color:var(--primary);',
-      'En observación': 'background:#FCF3DA; color:#8A6212;',
-      'Requiere atención regular': 'background:var(--danger-soft); color:var(--danger);',
-    };
-    const estilo = estilos[valor] || estilos['Estable'];
-    return `<span class="badge" style="${estilo}">${valor}</span>`;
+    const codigo = normalizarEstado(estado);
+    const info = ESTADOS_INFO[codigo];
+    return `<span class="badge" style="${info.estilo}">${codigo}</span>`;
   }
 
   function renderTabla(){
@@ -713,10 +789,15 @@
         <td class="px-5 py-3">${e.ciclo || '—'}</td>
         <td class="px-5 py-3">${estadoBadgeHTML(e.estado_actual)}</td>
         <td class="px-5 py-3 text-right space-x-2 whitespace-nowrap">
+          <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-ver-datos inline-flex items-center gap-1.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver datos
+          </button>
           <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-editar">Editar</button>
           <button class="btn-danger rounded-lg px-3 py-1.5 text-xs font-semibold btn-eliminar">Eliminar</button>
         </td>`;
       tr.querySelector('.abrir-perfil').addEventListener('click', () => abrirPerfil(e.dni));
+      tr.querySelector('.btn-ver-datos').addEventListener('click', () => abrirVerDatos(e));
       tr.querySelector('.btn-editar').addEventListener('click', () => abrirModalEditar(e));
       tr.querySelector('.btn-eliminar').addEventListener('click', () => eliminarEstudiante(e));
       tbody.appendChild(tr);
@@ -725,6 +806,37 @@
 
   ['filtroInstitucion','filtroCiclo'].forEach(id => $(id).addEventListener('change', renderTabla));
   $('filtroBusqueda').addEventListener('input', renderTabla);
+
+  // ---------- Campos dinámicos: vivienda y convivencia ----------
+  const campoModalidadVivienda = $('campoModalidadVivienda');
+  const campoGrupoMontoAlquiler = $('campoGrupoMontoAlquiler');
+  const campoMontoAlquiler = $('campoMontoAlquiler');
+  const campoConvivencia = $('campoConvivencia');
+  const campoGrupoConvivenciaDetalle = $('campoGrupoConvivenciaDetalle');
+  const campoConvivenciaDetalle = $('campoConvivenciaDetalle');
+
+  campoModalidadVivienda.addEventListener('change', () => {
+    const esAlquilado = campoModalidadVivienda.value === 'Casa o cuarto alquilado';
+    campoGrupoMontoAlquiler.classList.toggle('hidden', !esAlquilado);
+    campoMontoAlquiler.required = esAlquilado;
+    if (!esAlquilado) campoMontoAlquiler.value = '';
+  });
+
+  campoConvivencia.addEventListener('change', () => {
+    const conAlguien = campoConvivencia.value === 'Con alguien';
+    campoGrupoConvivenciaDetalle.classList.toggle('hidden', !conAlguien);
+    campoConvivenciaDetalle.required = conAlguien;
+    if (!conAlguien) campoConvivenciaDetalle.value = '';
+  });
+
+  function sincronizarCamposViviendaVisual(){
+    const esAlquilado = campoModalidadVivienda.value === 'Casa o cuarto alquilado';
+    campoGrupoMontoAlquiler.classList.toggle('hidden', !esAlquilado);
+    campoMontoAlquiler.required = esAlquilado;
+    const conAlguien = campoConvivencia.value === 'Con alguien';
+    campoGrupoConvivenciaDetalle.classList.toggle('hidden', !conAlguien);
+    campoConvivenciaDetalle.required = conAlguien;
+  }
 
   // ---------- Alta / edición ----------
   function resetFichaEstudianteVisual(){
@@ -738,6 +850,7 @@
     $('modalEstudianteTitulo').textContent = 'Nuevo estudiante';
     $('formEstudiante').reset();
     $('campoDni').disabled = false;
+    sincronizarCamposViviendaVisual();
     abrirModal('modalEstudiante');
   });
 
@@ -748,6 +861,7 @@
     f.reset();
     Object.entries(e).forEach(([k, v]) => { if (f[k]) f[k].value = v ?? ''; });
     $('campoDni').disabled = true; // el DNI es la clave, no editable
+    sincronizarCamposViviendaVisual();
     abrirModal('modalEstudiante');
   }
 
@@ -765,6 +879,11 @@
       carrera: f.carrera.value.trim(),
       ciclo: f.ciclo.value.trim(),
       telefono_emergencia: f.telefono_emergencia.value.trim(),
+      modalidad_vivienda: f.modalidad_vivienda.value,
+      monto_alquiler: f.modalidad_vivienda.value === 'Casa o cuarto alquilado' && f.monto_alquiler.value !== ''
+        ? Number(f.monto_alquiler.value) : null,
+      convivencia: f.convivencia.value,
+      convivencia_detalle: f.convivencia.value === 'Con alguien' ? f.convivencia_detalle.value.trim() : null,
     };
 
     const btn = $('btnGuardarEstudiante');
@@ -805,18 +924,73 @@
   // ============================================================
   // PERFIL DE ESTUDIANTE
   // ============================================================
+  // ---------- Modal: Ver datos completos del estudiante ----------
+  function identItem(label, valor){
+    return `<div class="doc-ident-item">
+      <span class="doc-ident-label">${label}</span>
+      <span class="doc-ident-value">${valor && String(valor).trim() ? valor : '—'}</span>
+    </div>`;
+  }
+
+  function abrirVerDatos(e){
+    const edad = calcularEdad(e.fecha_nacimiento);
+
+    $('verDatosIdentificacion').innerHTML = [
+      identItem('DNI', e.dni),
+      identItem('Apellidos', e.apellidos),
+      identItem('Nombres', e.nombres),
+      identItem('Fecha de nacimiento', fmtFecha(e.fecha_nacimiento)),
+      identItem('Edad', edad != null ? `${edad} años` : '—'),
+    ].join('');
+
+    $('verDatosContacto').innerHTML = [
+      identItem('Celular', e.celular),
+      identItem('Correo electrónico', e.correo),
+      identItem('Teléfono de emergencia', e.telefono_emergencia),
+    ].join('');
+
+    $('verDatosAcademicos').innerHTML = [
+      identItem('Institución', e.institucion),
+      identItem('Carrera', e.carrera),
+      identItem('Ciclo', e.ciclo),
+    ].join('');
+
+    const esAlquilado = e.modalidad_vivienda === 'Casa o cuarto alquilado';
+    const conAlguien = e.convivencia === 'Con alguien';
+    const viviendaItems = [
+      identItem('Modalidad de alojamiento', e.modalidad_vivienda),
+    ];
+    if (esAlquilado) {
+      viviendaItems.push(identItem('Monto mensual de alquiler', e.monto_alquiler != null ? `S/ ${Number(e.monto_alquiler).toFixed(2)}` : '—'));
+    }
+    viviendaItems.push(identItem('¿Vive solo o con alguien?', e.convivencia));
+    if (conAlguien) {
+      viviendaItems.push(identItem('¿Con quién vive?', e.convivencia_detalle));
+    }
+    $('verDatosVivienda').innerHTML = viviendaItems.join('');
+
+    const codigoEstado = normalizarEstado(e.estado_actual);
+    $('verDatosEstado').innerHTML = identItem('Estado emocional actual', ESTADOS_INFO[codigoEstado].label);
+
+    abrirModal('modalVerDatos');
+  }
+
+  $('btnVerDatosPerfil').addEventListener('click', () => {
+    if (estudianteActivo) abrirVerDatos(estudianteActivo);
+  });
+
   async function abrirPerfil(dni){
     const { data, error } = await supabaseClient.from('estudiantes').select('*').eq('dni', dni).single();
     if (error || !data) { alert('No se pudo cargar el perfil.'); return; }
     estudianteActivo = data;
 
-    $('perfilNombre').textContent = `${data.nombres} ${data.apellidos}`;
+    $('perfilNombre').textContent = `${data.apellidos} ${data.nombres}`;
     $('perfilEdad').textContent = `${calcularEdad(data.fecha_nacimiento)} años`;
+    $('perfilDni').textContent = data.dni;
     $('perfilInstitucion').textContent = data.institucion;
     $('perfilCarrera').textContent = data.carrera || '—';
     $('perfilCiclo').textContent = data.ciclo || '—';
-    $('perfilDni').textContent = data.dni;
-    $('perfilEstadoActual').value = data.estado_actual || 'Estable';
+    $('perfilEstadoActual').value = normalizarEstado(data.estado_actual);
 
     $('vistaLista').classList.add('hidden');
     $('vistaPerfil').classList.remove('hidden');
@@ -835,7 +1009,7 @@
 
     if (error) {
       alert('No se pudo actualizar el estado: ' + error.message);
-      ev.target.value = estudianteActivo.estado_actual || 'Estable';
+      ev.target.value = normalizarEstado(estudianteActivo.estado_actual);
       return;
     }
 
@@ -1271,6 +1445,11 @@
 
   // ---------- Inicio ----------
   cargarEstudiantes();
-</script>
+</script>  <!-- ============ LEYENDA DE ESTADOS (pie de página fijo) ============ -->
+  <footer id="leyendaEstados" class="fixed bottom-0 inset-x-0 z-30 text-center text-xs py-2 px-4 no-print"
+    style="background:rgba(247,248,246,.94); backdrop-filter:blur(6px); border-top:1px solid var(--border); color:var(--ink-muted);">
+    Leyenda: <strong>EST</strong> = Estable&nbsp;&nbsp;|&nbsp;&nbsp;<strong>EPA</strong> = En proceso de adaptación&nbsp;&nbsp;|&nbsp;&nbsp;<strong>RS</strong> = Requiere seguimiento&nbsp;&nbsp;|&nbsp;&nbsp;<strong>EO</strong> = En observación
+  </footer>
+
 </body>
 </html>
