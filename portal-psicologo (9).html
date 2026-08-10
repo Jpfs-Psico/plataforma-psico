@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal del Psicólogo / Especialista</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  /* ==========================================================================
+     GUÍA DE ESTILOS — Portal del Psicólogo
+     ==========================================================================
+     COLOR (paleta base sin cambios)
+       --bg            #F7F8F6  fondo general, off-white cálido-frío
+       --surface       #FFFFFF  tarjetas y superficies
+       --surface-alt   #F1F3F1  encabezados de tabla, franjas suaves
+       --ink           #16212B  texto principal (azul-carbón, no negro puro)
+       --ink-muted     #5B6B75  texto secundario / etiquetas
+       --primary       #1B3A57  azul marino profundo — acento institucional
+       --primary-hover #14293F  estado hover/activo del primario
+       --primary-soft  #E7EDF2  fondos suaves sobre primario (badges, focus)
+       --success       #3F7A5D  verde bosque sutil — solo para confirmaciones
+       --success-soft  #E7F1EC  fondo de estado de éxito
+       --danger        #B3413B  acciones destructivas
+       --danger-soft   #FBEAE8  fondo de estado de error
+       --border        #E3E7E5  bordes sutiles
+
+     TIPOGRAFÍA
+       Encabezados  → 'Plus Jakarta Sans' 700–800, tracking negativo (autoridad visual)
+       Cuerpo / UI  → 'Inter' 400–600, leading generoso
+       Mono (datos) → 'JetBrains Mono' 500 (DNI, fechas técnicas)
+
+     ESPACIADO Y FORMA
+       Radios:  tarjetas/modales 20–28px · inputs/botones 12px
+       Sombra:  difusas de tres capas, sin bordes duros
+     ========================================================================== */
+  :root{
+    --bg:#F7F8F6; --surface:#FFFFFF; --surface-alt:#F1F3F1;
+    --ink:#16212B; --ink-muted:#5B6B75;
+    --primary:#1B3A57; --primary-hover:#14293F; --primary-soft:#E7EDF2;
+    --success:#3F7A5D; --success-soft:#E7F1EC;
+    --danger:#B3413B; --danger-soft:#FBEAE8;
+    --border:#E3E7E5;
+    --ease: cubic-bezier(.4,0,.2,1);
+    --shadow-card:
+      0 1px 1px rgba(22,33,43,.02),
+      0 2px 6px rgba(22,33,43,.03),
+      0 24px 48px -24px rgba(22,33,43,.16);
+    --shadow-modal:
+      0 2px 4px rgba(22,33,43,.05),
+      0 12px 24px rgba(22,33,43,.06),
+      0 40px 80px -24px rgba(22,33,43,.28);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.5;
+  }
+  .font-display{ font-family:'Plus Jakarta Sans',sans-serif; letter-spacing:-.02em; }
+  .font-mono{ font-family:'JetBrains Mono',monospace; }
+  .card{ background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow-card); transition:box-shadow .3s var(--ease); }
+  .tab-strip{ background:var(--primary); position:relative; }
+  .tab-strip::after{
+    content:''; position:absolute; inset:auto 0 0 0; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
+  }
+  input, select, textarea{
+    border:1px solid var(--border); background:#fff; color:var(--ink);
+    box-shadow: inset 0 1px 2px rgba(22,33,43,.02);
+    transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
+  }
+  input:hover, select:hover, textarea:hover{ border-color:#CBD3D0; }
+  input:focus, select:focus, textarea:focus{
+    outline:none; border-color:var(--primary); box-shadow:0 0 0 4px var(--primary-soft);
+  }
+  .btn-primary{
+    background:var(--primary); color:#fff;
+    box-shadow:0 1px 2px rgba(27,58,87,.15), 0 10px 20px -10px rgba(27,58,87,.45);
+    transition:background .2s var(--ease), transform .18s var(--ease), box-shadow .2s var(--ease);
+  }
+  .btn-primary:hover{ background:var(--primary-hover); transform:translateY(-1px); box-shadow:0 2px 4px rgba(27,58,87,.18), 0 14px 28px -12px rgba(27,58,87,.5); }
+  .btn-primary:active{ transform:translateY(0) scale(.98); }
+  .btn-primary:disabled{ opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
+  .btn-ghost{ border:1px solid var(--border); color:var(--ink); background:#fff; transition:border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease); }
+  .btn-ghost:hover{ border-color:var(--primary); color:var(--primary); background:var(--primary-soft); }
+  .btn-danger{ color:var(--danger); background:#fff; transition:background .2s var(--ease); }
+  .btn-danger:hover{ background:var(--danger-soft); }
+  table th{ font-size:.6875rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-muted); font-weight:700; }
+  tbody tr{ transition:background .15s var(--ease); }
+  tbody tr:hover{ background:var(--surface-alt); }
+  .subtab{ border-bottom:2px solid transparent; color:var(--ink-muted); font-weight:500; transition:color .2s var(--ease), border-color .2s var(--ease); }
+  .subtab.active{ border-color:var(--primary); color:var(--primary); font-weight:600; }
+  .modal-backdrop{ background:rgba(22,33,43,.52); backdrop-filter:blur(4px); }
+  .modal-panel{ box-shadow:var(--shadow-modal); }
+  .badge{ font-size:.6875rem; font-weight:700; padding:.25rem .65rem; border-radius:999px; letter-spacing:.03em; }
+  .field-label{ font-size:.6875rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-muted); font-weight:700; }
+
+  /* Estado de éxito tras guardar (ficha → confirmación) */
+  .ficha-panel{ transition:opacity .32s var(--ease), transform .32s var(--ease); }
+  .ficha-panel.ficha-saliendo{ opacity:0; transform:translateY(-8px) scale(.98); pointer-events:none; }
+  .success-panel{ opacity:0; transform:translateY(10px); transition:opacity .38s var(--ease) .1s, transform .38s var(--ease) .1s; }
+  .success-panel.success-visible{ opacity:1; transform:translateY(0); }
+  .success-icon-ring{ background:var(--success-soft); box-shadow:0 0 0 8px rgba(63,122,93,.06); }
+  .success-check{ stroke:var(--success); }
+
+  @media print{
+    body *{ visibility:hidden; }
+    #printArea, #printArea *, #rfPrintArea, #rfPrintArea *{ visibility:visible; }
+    #printArea, #rfPrintArea{ position:absolute; top:0; left:0; width:100%; padding:24px; }
+    .no-print{ display:none !important; }
+  }
+
+  /* ==========================================================================
+     FORMATO DE DOCUMENTO — Vista previa e impresión de reportes/informes
+     ========================================================================== */
+  .doc-letterhead{ text-align:center; padding-bottom:20px; margin-bottom:28px; border-bottom:2px solid var(--ink); }
+  .doc-letterhead-eyebrow{ font-size:.6875rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-muted); font-weight:700; margin-bottom:10px; }
+  .doc-letterhead-title{ font-family:'Plus Jakarta Sans',sans-serif; letter-spacing:.02em; font-size:1.375rem; font-weight:800; text-transform:uppercase; }
+  .doc-letterhead-sub{ font-size:.8125rem; color:var(--ink-muted); margin-top:6px; }
+  .doc-letterhead-row{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:16px; }
+  .doc-letterhead-left{ text-align:left; font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-muted); font-weight:700; }
+  .doc-letterhead-center{ text-align:center; font-family:'Plus Jakarta Sans',sans-serif; letter-spacing:.02em; font-size:1.25rem; font-weight:800; text-transform:uppercase; }
+
+  .doc-section{ margin-bottom:26px; page-break-inside:avoid; }
+  .doc-section-title{
+    font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:.9375rem;
+    letter-spacing:.02em; text-transform:uppercase; color:var(--primary);
+    padding-bottom:8px; margin-bottom:14px; border-bottom:1px solid var(--border);
+  }
+  .doc-justify{
+    text-align:justify; text-justify:inter-word; line-height:1.75; font-size:.9375rem;
+    color:var(--ink); white-space:pre-line; hyphens:auto;
+  }
+  .doc-ident-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px 32px;
+    background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; padding:20px 24px;
+  }
+  .doc-ident-item{ display:flex; flex-direction:column; gap:2px; }
+  .doc-ident-label{ font-size:.6875rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-muted); font-weight:700; }
+  .doc-ident-value{ font-size:.9375rem; font-weight:600; color:var(--ink); }
+  .doc-kv-row{ display:flex; justify-content:space-between; gap:16px; padding:8px 0; border-bottom:1px dashed var(--border); font-size:.9375rem; }
+  .doc-kv-row:last-child{ border-bottom:none; }
+  .doc-kv-label{ color:var(--ink-muted); font-weight:600; }
+
+  .doc-signature{ margin-top:64px; text-align:center; page-break-inside:avoid; }
+  .doc-signature-line{ width:280px; margin:0 auto 10px; border-top:1px solid var(--ink); }
+  .doc-signature-name{ font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:.9375rem; }
+  .doc-signature-role{ font-size:.8125rem; color:var(--ink-muted); margin-top:2px; letter-spacing:.01em; }
+
+  @media print{
+    .doc-letterhead{ border-bottom-color:#000; }
+    .doc-section-title{ color:#000; }
+    .doc-ident-grid{ background:#fff; border-color:#999; }
+    .doc-signature-line{ border-top-color:#000; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+  <div class="tab-strip text-white sticky top-0 z-30 no-print">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 py-5 flex items-center justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-[.12em] text-white/55 font-semibold">Portal del Psicólogo</p>
+        <h1 class="font-display text-2xl font-extrabold mt-0.5">Portal del Psicólogo / Especialista</h1>
+      </div>
+      <nav class="flex gap-2 text-sm">
+        <button id="navEstudiantes" class="seccion-nav-btn px-3 py-1.5 rounded-xl bg-white/15 font-semibold">Estudiantes</button>
+        <button id="navReportesFecha" class="seccion-nav-btn px-3 py-1.5 rounded-xl hover:bg-white/10">Reportes por fecha</button>
+        <button id="btnFirmaProfesional" class="px-3 py-1.5 rounded-xl hover:bg-white/10 flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Firma profesional
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-6 sm:px-8 py-10">
+
+  <div id="seccionEstudiantes">
+    <!-- ============ VISTA: LISTA DE ESTUDIANTES ============ -->
+    <section id="vistaLista">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
+        <div class="flex flex-wrap gap-3 items-end">
+          <div>
+            <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Institución</label>
+            <select id="filtroInstitucion" class="rounded-xl px-3 py-2 text-sm min-w-[160px]">
+              <option value="">Todos</option>
+              <option>UTP</option><option>USS</option><option>Senati</option>
+              <option>Cetemin</option><option>Valle Grande</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Ciclo</label>
+            <select id="filtroCiclo" class="rounded-xl px-3 py-2 text-sm min-w-[120px]">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Buscar</label>
+            <input id="filtroBusqueda" placeholder="Apellidos, nombres o DNI" class="rounded-xl px-3 py-2 text-sm min-w-[220px]">
+          </div>
+        </div>
+        <button id="btnNuevoEstudiante" class="btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap">
+          + Nuevo estudiante
+        </button>
+      </div>
+
+      <div class="card rounded-[22px] shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-[var(--bg)]">
+            <tr>
+              <th class="text-left px-5 py-3">Apellidos y Nombres</th>
+              <th class="text-left px-5 py-3">DNI</th>
+              <th class="text-left px-5 py-3">Institución</th>
+              <th class="text-left px-5 py-3">Carrera</th>
+              <th class="text-left px-5 py-3">Ciclo</th>
+              <th class="text-left px-5 py-3">Estado</th>
+              <th class="text-right px-5 py-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaEstudiantes" class="divide-y" style="border-color:var(--border)"></tbody>
+        </table>
+        <p id="listaVacia" class="hidden text-center text-sm text-[var(--ink-muted)] py-10">No se encontraron estudiantes con estos filtros.</p>
+      </div>
+    </section>
+
+    <!-- ============ VISTA: PERFIL DE ESTUDIANTE ============ -->
+    <section id="vistaPerfil" class="hidden">
+      <button id="btnVolverLista" class="text-sm text-[var(--primary)] font-semibold mb-4 inline-flex items-center gap-1">
+        ← Volver al listado
+      </button>
+
+      <div class="card rounded-[22px] shadow-sm p-6 mb-6 flex flex-wrap items-center gap-x-10 gap-y-3">
+        <div>
+          <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Nombre completo</p>
+          <p id="perfilNombre" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p>
+        </div>
+        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Edad</p><p id="perfilEdad" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p></div>
+        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Institución</p><p id="perfilInstitucion" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p></div>
+        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Carrera</p><p id="perfilCarrera" class="text-lg font-medium"></p></div>
+        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Ciclo</p><p id="perfilCiclo" class="text-lg font-medium"></p></div>
+        <div>
+          <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold mb-1.5">Estado actual</p>
+          <select id="perfilEstadoActual" class="rounded-xl px-3 py-2 text-sm font-semibold">
+            <option value="Estable">Estable</option>
+            <option value="En proceso de adaptación">En proceso de adaptación</option>
+            <option value="En observación">En observación</option>
+            <option value="Requiere atención regular">Requiere atención regular</option>
+          </select>
+        </div>
+        <div class="ml-auto font-mono text-xs text-[var(--ink-muted)]">DNI <span id="perfilDni" class="text-[var(--ink)] font-semibold"></span></div>
+      </div>
+
+      <div class="flex gap-1 border-b mb-6" style="border-color:var(--border)">
+        <button data-tab="sesiones" class="subtab active px-4 py-2.5 text-sm">Reportes de Sesión</button>
+        <button data-tab="informes" class="subtab px-4 py-2.5 text-sm">Informes Psicológicos</button>
+        <button data-tab="pruebas" class="subtab px-4 py-2.5 text-sm">Pruebas Psicológicas</button>
+      </div>
+
+      <!-- TAB: SESIONES -->
+      <div id="tabSesiones" class="tab-panel">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display text-lg font-bold tracking-tight">Historial de reportes</h3>
+          <button id="btnNuevaSesion" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">+ Agregar reporte de sesión</button>
+        </div>
+        <div id="listaSesiones" class="space-y-6"></div>
+        <p id="sesionesVacio" class="hidden text-sm text-[var(--ink-muted)] text-center py-8">Aún no hay reportes de sesión.</p>
+      </div>
+
+      <!-- TAB: INFORMES -->
+      <div id="tabInformes" class="tab-panel hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display text-lg font-bold tracking-tight">Historial de informes</h3>
+          <button id="btnNuevoInforme" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">+ Agregar informe psicológico</button>
+        </div>
+        <div id="listaInformes" class="space-y-6"></div>
+        <p id="informesVacio" class="hidden text-sm text-[var(--ink-muted)] text-center py-8">Aún no hay informes psicológicos.</p>
+      </div>
+
+      <!-- TAB: PRUEBAS -->
+      <div id="tabPruebas" class="tab-panel hidden">
+        <div id="listaPruebasResultados" class="space-y-3"></div>
+        <p id="pruebasVacio" class="hidden text-sm text-[var(--ink-muted)] text-center py-8">El estudiante no ha rendido pruebas aún.</p>
+      </div>
+    </section>
+
+    <!-- ============ VISTA AMPLIA: REDACTAR REPORTE DE SESIÓN ============ -->
+    <section id="vistaEditorSesion" class="hidden">
+      <button id="btnCancelarSesion" class="text-sm text-[var(--primary)] font-semibold mb-4 inline-flex items-center gap-1">
+        ← Cancelar y volver al perfil
+      </button>
+      <div class="card rounded-[22px] p-8 sm:p-14">
+        <div class="mb-10 pb-6 border-b" style="border-color:var(--border)">
+          <p id="editorSesionEyebrow" class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold mb-1.5">Nuevo reporte de sesión para</p>
+          <h2 id="editorSesionNombre" class="font-display text-[1.75rem] font-extrabold tracking-tight"></h2>
+        </div>
+        <form id="formSesion" class="space-y-8 max-w-3xl">
+          <div class="grid sm:grid-cols-2 gap-6">
+            <div><label class="field-label">Fecha de atención *</label>
+              <input required name="fecha_atencion" type="date" class="mt-2 w-full rounded-xl px-4 py-3 text-base"></div>
+            <div><label class="field-label">N.º de sesión *</label>
+              <input required name="numero_sesion" type="number" min="1" class="mt-2 w-full rounded-xl px-4 py-3 text-base"></div>
+          </div>
+          <div><label class="field-label">Método / técnica</label>
+            <input name="metodo_tecnica" class="mt-2 w-full rounded-xl px-4 py-3 text-base"></div>
+          <div><label class="field-label">Resumen de la sesión</label>
+            <textarea name="resumen_sesion" rows="9" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Conclusión / observaciones</label>
+            <textarea name="conclusion_observaciones" rows="7" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Actividades / compromisos</label>
+            <textarea name="actividades_compromisos" rows="6" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div class="grid sm:grid-cols-2 gap-6 pt-6 border-t" style="border-color:var(--border)">
+            <div><label class="field-label">Nombre del psicólogo</label>
+              <input name="nombre_psicologo" value="Lic. Jaime Pfocco Silva" class="mt-2 w-full rounded-xl px-4 py-3 text-base"></div>
+            <div><label class="field-label">Número de colegiatura</label>
+              <input name="numero_colegiatura" placeholder="Ej. 12345" class="mt-2 w-full rounded-xl px-4 py-3 text-base"></div>
+          </div>
+          <div class="flex justify-end gap-3 pt-6 border-t" style="border-color:var(--border)">
+            <button type="button" id="btnCancelarSesion2" class="btn-ghost rounded-xl px-5 py-3 text-sm font-semibold">Cancelar</button>
+            <button type="submit" class="btn-primary rounded-xl px-6 py-3 text-sm font-semibold">Guardar reporte</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ VISTA AMPLIA: REDACTAR INFORME PSICOLÓGICO ============ -->
+    <section id="vistaEditorInforme" class="hidden">
+      <button id="btnCancelarInforme" class="text-sm text-[var(--primary)] font-semibold mb-4 inline-flex items-center gap-1">
+        ← Cancelar y volver al perfil
+      </button>
+      <div class="card rounded-[22px] p-8 sm:p-14">
+        <div class="mb-10 pb-6 border-b" style="border-color:var(--border)">
+          <p id="editorInformeEyebrow" class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold mb-1.5">Nuevo informe psicológico para</p>
+          <h2 id="editorInformeNombre" class="font-display text-[1.75rem] font-extrabold tracking-tight"></h2>
+        </div>
+        <form id="formInforme" class="space-y-8 max-w-3xl">
+          <div><label class="field-label">Fecha de emisión *</label>
+            <input required name="fecha_emision" type="date" class="mt-2 w-full sm:w-64 rounded-xl px-4 py-3 text-base"></div>
+          <div><label class="field-label">Motivo de consulta</label>
+            <textarea name="motivo_consulta" rows="5" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Instrumentos utilizados</label>
+            <textarea name="instrumentos_utilizados" rows="4" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Observación / relato</label>
+            <textarea name="observacion_relato" rows="7" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Resultados de prueba</label>
+            <textarea name="resultados_prueba" rows="5" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Análisis psicológico</label>
+            <textarea name="analisis_psicologico" rows="9" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Recomendaciones</label>
+            <textarea name="recomendaciones" rows="6" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div><label class="field-label">Conclusiones</label>
+            <textarea name="conclusiones" rows="6" class="mt-2 w-full rounded-xl px-4 py-4 text-base leading-relaxed"></textarea></div>
+          <div class="grid sm:grid-cols-2 gap-6 pt-6 border-t" style="border-color:var(--border)">
+            <div><label class="field-label">Nombre del psicólogo</label>
+              <input name="nombre_psicologo" value="Lic. Jaime Pfocco Silva" class="mt-2 w-full rounded-xl px-4 py-3 text-base"></div>
+            <div><label class="field-label">Número de colegiatura</label>
+              <input name="numero_colegiatura" placeholder="Ej. 12345" class="mt-2 w-full rounded-xl px-4 py-3 text-base"></div>
+          </div>
+          <div class="flex justify-end gap-3 pt-6 border-t" style="border-color:var(--border)">
+            <button type="button" id="btnCancelarInforme2" class="btn-ghost rounded-xl px-5 py-3 text-sm font-semibold">Cancelar</button>
+            <button type="submit" class="btn-primary rounded-xl px-6 py-3 text-sm font-semibold">Guardar informe</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+  <!-- fin #seccionEstudiantes -->
+
+  <!-- ============ SECCIÓN: REPORTES POR RANGO DE FECHAS ============ -->
+  <div id="seccionReportesFecha" class="hidden">
+    <div class="card rounded-[22px] shadow-sm p-6 mb-6">
+      <div class="flex flex-wrap items-end gap-4">
+        <div>
+          <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Fecha de inicio</label>
+          <input id="rfFechaInicio" type="date" class="rounded-xl px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Fecha de fin</label>
+          <input id="rfFechaFin" type="date" class="rounded-xl px-3 py-2 text-sm">
+        </div>
+        <button id="rfBtnBuscar" class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Buscar atenciones</button>
+        <button id="rfBtnPreview" class="btn-ghost rounded-xl px-5 py-2.5 text-sm font-semibold ml-auto">Vista previa e impresión</button>
+      </div>
+    </div>
+
+    <div class="card rounded-[22px] shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-[var(--bg)]">
+          <tr>
+            <th class="text-left px-5 py-3 sortable" id="rfThNombre">Apellidos y Nombres <span class="sort-arrow"></span></th>
+            <th class="text-left px-5 py-3">Institución</th>
+            <th class="text-left px-5 py-3">Carrera</th>
+            <th class="text-left px-5 py-3">Fecha de atención</th>
+          </tr>
+        </thead>
+        <tbody id="rfTablaReporte" class="divide-y" style="border-color:var(--border)"></tbody>
+      </table>
+      <p id="rfReporteVacio" class="hidden text-center text-sm text-[var(--ink-muted)] py-10">
+        Selecciona un rango de fechas y presiona "Buscar atenciones".
+      </p>
+    </div>
+  </div>
+  </main>
+
+  <!-- Vista previa de impresión: Reportes por fecha -->
+  <div id="rfModalPreview" class="hidden fixed inset-0 flex items-center justify-center p-4 z-40 no-print" style="background:rgba(28,43,36,.45)">
+    <div class="card rounded-[22px] shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b no-print" style="border-color:var(--border)">
+        <h3 class="font-display text-lg font-bold tracking-tight">Vista previa del reporte</h3>
+        <div class="flex gap-2">
+          <button id="rfBtnImprimir" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">Imprimir</button>
+          <button id="rfBtnCerrarPreview" class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Cerrar</button>
+        </div>
+      </div>
+      <div id="rfPrintArea" class="p-8"></div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NUEVO / EDITAR ESTUDIANTE ============ -->
+  <div id="modalEstudiante" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-40 no-print">
+    <div class="card modal-panel rounded-[22px] w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative">
+
+      <!-- FICHA: formulario -->
+      <div id="fichaEstudiantePanel" class="ficha-panel">
+        <div class="flex justify-between items-center mb-5">
+          <h3 id="modalEstudianteTitulo" class="font-display text-xl font-bold tracking-tight">Nuevo estudiante</h3>
+          <button class="cerrar-modal text-[var(--ink-muted)] hover:text-[var(--ink)] text-xl leading-none">&times;</button>
+        </div>
+        <form id="formEstudiante" class="grid sm:grid-cols-2 gap-4">
+          <div><label class="field-label">DNI *</label>
+            <input required name="dni" id="campoDni" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div><label class="field-label">Fecha de nacimiento *</label>
+            <input required name="fecha_nacimiento" type="date" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div><label class="field-label">Apellidos *</label>
+            <input required name="apellidos" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div><label class="field-label">Nombres *</label>
+            <input required name="nombres" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div><label class="field-label">Celular</label>
+            <input name="celular" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div><label class="field-label">Correo</label>
+            <input name="correo" type="email" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div><label class="field-label">Teléfono de emergencia</label>
+            <input name="telefono_emergencia" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div><label class="field-label">Institución *</label>
+            <select required name="institucion" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
+              <option value="" disabled selected>Selecciona</option>
+              <option>UTP</option><option>USS</option><option>Senati</option><option>Cetemin</option><option>Valle Grande</option>
+            </select></div>
+          <div><label class="field-label">Ciclo *</label>
+            <input required name="ciclo" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div class="sm:col-span-2"><label class="field-label">Carrera *</label>
+            <input required name="carrera" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
+          <div class="sm:col-span-2 flex justify-end gap-3 mt-2">
+            <button type="button" class="cerrar-modal btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Cancelar</button>
+            <button type="submit" id="btnGuardarEstudiante" class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Guardar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ÉXITO: confirmación centrada, reemplaza a la ficha -->
+      <div id="fichaEstudianteExito" class="success-panel hidden absolute inset-0 flex flex-col items-center justify-center px-8 py-12 text-center">
+        <div class="success-icon-ring w-16 h-16 rounded-full flex items-center justify-center mb-5">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path class="success-check" d="M5 13l4 4L19 7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="font-display text-2xl font-bold">Registro guardado correctamente.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ MODAL: FIRMA PROFESIONAL ============ -->
+  <div id="modalFirma" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-40 no-print">
+    <div class="card modal-panel rounded-[22px] w-full max-w-md p-6 sm:p-8">
+      <div class="flex justify-between items-center mb-5">
+        <h3 class="font-display text-xl font-bold tracking-tight">Firma profesional</h3>
+        <button class="cerrar-modal text-[var(--ink-muted)] hover:text-[var(--ink)] text-xl leading-none">&times;</button>
+      </div>
+      <p class="text-sm text-[var(--ink-muted)] leading-relaxed mb-6">
+        Este número de colegiatura aparecerá junto a la firma en todos los reportes e informes que generes.
+      </p>
+      <form id="formFirma" class="space-y-4">
+        <div>
+          <label class="field-label">Nombre completo</label>
+          <input disabled value="Lic. Jaime Pfocco Silva" class="mt-2 w-full rounded-xl px-4 py-3 text-sm opacity-70">
+        </div>
+        <div>
+          <label class="field-label">Número de colegiatura (CPsP)</label>
+          <input id="campoColegiatura" name="colegiatura" placeholder="Ej. 12345" class="mt-2 w-full rounded-xl px-4 py-3 text-sm">
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" class="cerrar-modal btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Cancelar</button>
+          <button type="submit" class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: VISTA PREVIA / IMPRESIÓN ============ -->
+  <div id="modalPreview" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 sm:p-8 z-50">
+    <div class="card rounded-[22px] shadow-xl w-full max-w-3xl max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b no-print" style="border-color:var(--border)">
+        <h3 class="font-display text-lg font-bold tracking-tight">Vista previa del documento</h3>
+        <div class="flex gap-2">
+          <button id="btnImprimir" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">Imprimir</button>
+          <button class="cerrar-modal btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Cerrar</button>
+        </div>
+      </div>
+      <div id="printArea" class="p-10 sm:p-14"></div>
+    </div>
+  </div>
+
+<script>
+  // ============================================================================
+  // CONFIGURACIÓN DE SUPABASE (archivo autocontenido, sin dependencias externas)
+  // ============================================================================
+  const SUPABASE_URL = "https://dqmrwwhjjxzedxyomcwg.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbXJ3d2hqanh6ZWR4eW9tY3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNDc1NTQsImV4cCI6MjEwMTcyMzU1NH0.SKhvYu3Eg5MsiYgl9s6nWmFXptIspn-Zt6R0_wIbDWk";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let estudiantes = [];
+  let estudianteActivo = null;
+
+  // ---------- Utilidades ----------
+  function calcularEdad(fechaStr){
+    const hoy = new Date(); const nac = new Date(fechaStr + 'T00:00:00');
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+  }
+  function fmtFecha(f){ if(!f) return '—'; return new Date(f).toLocaleDateString('es-PE', {year:'numeric', month:'long', day:'numeric'}); }
+  function abrirModal(id){ $(id).classList.remove('hidden'); }
+  function cerrarModales(){ document.querySelectorAll('.fixed.z-40, .fixed.z-50').forEach(m => m.classList.add('hidden')); }
+  document.querySelectorAll('.cerrar-modal').forEach(b => b.addEventListener('click', () => { cerrarModales(); resetFichaEstudianteVisual(); }));
+
+  // ---------- Vistas amplias de redacción (reporte de sesión / informe) ----------
+  function mostrarEditor(id){
+    $('vistaPerfil').classList.add('hidden');
+    $('vistaEditorSesion').classList.add('hidden');
+    $('vistaEditorInforme').classList.add('hidden');
+    $(id).classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function ocultarEditores(){
+    $('vistaEditorSesion').classList.add('hidden');
+    $('vistaEditorInforme').classList.add('hidden');
+    $('vistaPerfil').classList.remove('hidden');
+  }
+
+  // ---------- Formato de documento para vista previa / impresión ----------
+  const NUMEROS_ROMANOS = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+
+  function encabezadoDocumento(titulo){
+    return `
+      <div class="doc-letterhead">
+        <h1 class="doc-letterhead-center">${titulo}</h1>
+      </div>`;
+  }
+
+  function bloqueIdentificacion(estudiante, fechaAtencion, numeroSesion){
+    const edad = calcularEdad(estudiante.fecha_nacimiento);
+    const campos = [
+      ['Apellidos y nombres', `${estudiante.apellidos} ${estudiante.nombres}`],
+      ['Edad', `${edad} años`],
+      ['Fecha de nacimiento', fmtFecha(estudiante.fecha_nacimiento)],
+      ['Celular', estudiante.celular || '—'],
+      ['Carrera / Especialidad', estudiante.carrera || '—'],
+      ['Universidad / Institución', estudiante.institucion || '—'],
+      ['Fecha de atención', fmtFecha(fechaAtencion)],
+    ];
+    if (numeroSesion !== undefined && numeroSesion !== null && numeroSesion !== '') {
+      campos.push(['Sesión número', String(numeroSesion)]);
+    }
+    return `
+      <div class="doc-section">
+        <h3 class="doc-section-title">I. Datos de Identificación</h3>
+        <div class="doc-ident-grid">
+          ${campos.map(([label, valor]) => `
+            <div class="doc-ident-item">
+              <span class="doc-ident-label">${label}</span>
+              <span class="doc-ident-value">${valor}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function seccionRomana(numero, titulo, contenidoHtml, sinJustificar){
+    return `
+      <div class="doc-section">
+        <h3 class="doc-section-title">${NUMEROS_ROMANOS[numero - 1] || numero}. ${titulo}</h3>
+        <div class="${sinJustificar ? '' : 'doc-justify'}">${contenidoHtml}</div>
+      </div>`;
+  }
+
+  function parrafoJustificado(texto){
+    return `<p class="doc-justify">${(texto && texto.trim()) ? texto : '—'}</p>`;
+  }
+
+  // ---------- Firma profesional (nombre fijo + N.º de colegiatura editable) ----------
+  const NOMBRE_PROFESIONAL = 'Lic. Jaime Pfocco Silva';
+  const LS_COLEGIATURA = 'psi_colegiatura_num';
+
+  function obtenerColegiatura(){
+    return localStorage.getItem(LS_COLEGIATURA) || '';
+  }
+
+  $('btnFirmaProfesional').addEventListener('click', () => {
+    $('campoColegiatura').value = obtenerColegiatura();
+    abrirModal('modalFirma');
+  });
+
+  $('formFirma').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const valor = $('campoColegiatura').value.trim();
+    localStorage.setItem(LS_COLEGIATURA, valor);
+    cerrarModales();
+  });
+
+  // Genera el bloque de firma a partir de los datos ingresados en el propio
+  // formulario del reporte/informe; si un documento antiguo no los tiene
+  // guardados, recurre al nombre fijo y a la colegiatura configurada.
+  function bloqueFirma(nombreIngresado, colegiaturaIngresada){
+    const nombre = (nombreIngresado && nombreIngresado.trim()) ? nombreIngresado.trim() : NOMBRE_PROFESIONAL;
+    const colegiaturaTexto = (colegiaturaIngresada && colegiaturaIngresada.trim())
+      ? colegiaturaIngresada.trim()
+      : (obtenerColegiatura() || '______');
+    return `
+      <div class="doc-signature">
+        <div class="doc-signature-line"></div>
+        <p class="doc-signature-name">${nombre}</p>
+        <p class="doc-signature-role">Psicólogo(a) Colegiado(a) · N.º de Colegiatura CPsP ${colegiaturaTexto}</p>
+      </div>`;
+  }
+
+  // ============================================================
+  // NAVEGACIÓN ENTRE SECCIONES PRINCIPALES (Estudiantes / Reportes por fecha)
+  // ============================================================
+  $('navEstudiantes').addEventListener('click', () => cambiarSeccionPrincipal('estudiantes'));
+  $('navReportesFecha').addEventListener('click', () => cambiarSeccionPrincipal('reportesFecha'));
+
+  function cambiarSeccionPrincipal(seccion){
+    const esEstudiantes = seccion === 'estudiantes';
+    $('seccionEstudiantes').classList.toggle('hidden', !esEstudiantes);
+    $('seccionReportesFecha').classList.toggle('hidden', esEstudiantes);
+    $('navEstudiantes').classList.toggle('bg-white/15', esEstudiantes);
+    $('navEstudiantes').classList.toggle('font-semibold', esEstudiantes);
+    $('navReportesFecha').classList.toggle('bg-white/15', !esEstudiantes);
+    $('navReportesFecha').classList.toggle('font-semibold', !esEstudiantes);
+  }
+
+  // ============================================================
+  // LISTADO DE ESTUDIANTES
+  // ============================================================
+  async function cargarEstudiantes(){
+    const { data, error } = await supabaseClient.from('estudiantes').select('*').order('apellidos');
+    if (error) { console.error(error); return; }
+    estudiantes = data || [];
+    poblarFiltroCiclo();
+    renderTabla();
+  }
+
+  function poblarFiltroCiclo(){
+    const ciclos = [...new Set(estudiantes.map(e => e.ciclo).filter(Boolean))].sort();
+    const sel = $('filtroCiclo');
+    const actual = sel.value;
+    sel.innerHTML = '<option value="">Todos</option>' + ciclos.map(c => `<option>${c}</option>`).join('');
+    sel.value = actual;
+  }
+
+  // Colores y etiqueta por estado clínico actual
+  function estadoBadgeHTML(estado){
+    const valor = estado || 'Estable';
+    const estilos = {
+      'Estable': 'background:var(--success-soft); color:var(--success);',
+      'En proceso de adaptación': 'background:var(--primary-soft); color:var(--primary);',
+      'En observación': 'background:#FCF3DA; color:#8A6212;',
+      'Requiere atención regular': 'background:var(--danger-soft); color:var(--danger);',
+    };
+    const estilo = estilos[valor] || estilos['Estable'];
+    return `<span class="badge" style="${estilo}">${valor}</span>`;
+  }
+
+  function renderTabla(){
+    const inst = $('filtroInstitucion').value;
+    const ciclo = $('filtroCiclo').value;
+    const q = $('filtroBusqueda').value.trim().toLowerCase();
+
+    const filtrados = estudiantes.filter(e =>
+      (!inst || e.institucion === inst) &&
+      (!ciclo || e.ciclo === ciclo) &&
+      (!q || `${e.apellidos} ${e.nombres} ${e.dni}`.toLowerCase().includes(q))
+    );
+
+    const tbody = $('tablaEstudiantes');
+    tbody.innerHTML = '';
+    $('listaVacia').classList.toggle('hidden', filtrados.length > 0);
+
+    filtrados.forEach(e => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="px-5 py-3">
+          <button class="font-semibold text-[var(--primary)] hover:underline abrir-perfil">${e.apellidos}, ${e.nombres}</button>
+        </td>
+        <td class="px-5 py-3 font-mono text-xs">${e.dni}</td>
+        <td class="px-5 py-3">${e.institucion}</td>
+        <td class="px-5 py-3">${e.carrera || '—'}</td>
+        <td class="px-5 py-3">${e.ciclo || '—'}</td>
+        <td class="px-5 py-3">${estadoBadgeHTML(e.estado_actual)}</td>
+        <td class="px-5 py-3 text-right space-x-2 whitespace-nowrap">
+          <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-editar">Editar</button>
+          <button class="btn-danger rounded-lg px-3 py-1.5 text-xs font-semibold btn-eliminar">Eliminar</button>
+        </td>`;
+      tr.querySelector('.abrir-perfil').addEventListener('click', () => abrirPerfil(e.dni));
+      tr.querySelector('.btn-editar').addEventListener('click', () => abrirModalEditar(e));
+      tr.querySelector('.btn-eliminar').addEventListener('click', () => eliminarEstudiante(e));
+      tbody.appendChild(tr);
+    });
+  }
+
+  ['filtroInstitucion','filtroCiclo'].forEach(id => $(id).addEventListener('change', renderTabla));
+  $('filtroBusqueda').addEventListener('input', renderTabla);
+
+  // ---------- Alta / edición ----------
+  function resetFichaEstudianteVisual(){
+    $('fichaEstudianteExito').classList.add('hidden');
+    $('fichaEstudianteExito').classList.remove('success-visible');
+    $('fichaEstudiantePanel').classList.remove('hidden', 'ficha-saliendo');
+  }
+
+  $('btnNuevoEstudiante').addEventListener('click', () => {
+    resetFichaEstudianteVisual();
+    $('modalEstudianteTitulo').textContent = 'Nuevo estudiante';
+    $('formEstudiante').reset();
+    $('campoDni').disabled = false;
+    abrirModal('modalEstudiante');
+  });
+
+  function abrirModalEditar(e){
+    resetFichaEstudianteVisual();
+    $('modalEstudianteTitulo').textContent = 'Editar estudiante';
+    const f = $('formEstudiante');
+    f.reset();
+    Object.entries(e).forEach(([k, v]) => { if (f[k]) f[k].value = v ?? ''; });
+    $('campoDni').disabled = true; // el DNI es la clave, no editable
+    abrirModal('modalEstudiante');
+  }
+
+  $('formEstudiante').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const f = ev.target;
+    const payload = {
+      dni: f.dni.value.trim(),
+      apellidos: f.apellidos.value.trim(),
+      nombres: f.nombres.value.trim(),
+      fecha_nacimiento: f.fecha_nacimiento.value,
+      celular: f.celular.value.trim(),
+      correo: f.correo.value.trim(),
+      institucion: f.institucion.value,
+      carrera: f.carrera.value.trim(),
+      ciclo: f.ciclo.value.trim(),
+      telefono_emergencia: f.telefono_emergencia.value.trim(),
+    };
+
+    const btn = $('btnGuardarEstudiante');
+    btn.disabled = true;
+
+    const { error } = await supabaseClient.from('estudiantes').upsert(payload, { onConflict: 'dni' });
+
+    btn.disabled = false;
+
+    if (error) { alert('Error al guardar: ' + error.message); return; }
+
+    await cargarEstudiantes();
+
+    // La ficha se desvanece y da paso a la confirmación de éxito
+    const ficha = $('fichaEstudiantePanel');
+    const exito = $('fichaEstudianteExito');
+    ficha.classList.add('ficha-saliendo');
+
+    setTimeout(() => {
+      ficha.classList.add('hidden');
+      exito.classList.remove('hidden');
+      requestAnimationFrame(() => exito.classList.add('success-visible'));
+    }, 280);
+
+    setTimeout(() => {
+      cerrarModales();
+      resetFichaEstudianteVisual();
+    }, 1900);
+  });
+
+  async function eliminarEstudiante(e){
+    if (!confirm(`¿Eliminar a ${e.nombres} ${e.apellidos}? Esta acción borrará también su historial asociado.`)) return;
+    const { error } = await supabaseClient.from('estudiantes').delete().eq('dni', e.dni);
+    if (error) { alert('Error al eliminar: ' + error.message); return; }
+    await cargarEstudiantes();
+  }
+
+  // ============================================================
+  // PERFIL DE ESTUDIANTE
+  // ============================================================
+  async function abrirPerfil(dni){
+    const { data, error } = await supabaseClient.from('estudiantes').select('*').eq('dni', dni).single();
+    if (error || !data) { alert('No se pudo cargar el perfil.'); return; }
+    estudianteActivo = data;
+
+    $('perfilNombre').textContent = `${data.nombres} ${data.apellidos}`;
+    $('perfilEdad').textContent = `${calcularEdad(data.fecha_nacimiento)} años`;
+    $('perfilInstitucion').textContent = data.institucion;
+    $('perfilCarrera').textContent = data.carrera || '—';
+    $('perfilCiclo').textContent = data.ciclo || '—';
+    $('perfilDni').textContent = data.dni;
+    $('perfilEstadoActual').value = data.estado_actual || 'Estable';
+
+    $('vistaLista').classList.add('hidden');
+    $('vistaPerfil').classList.remove('hidden');
+    cambiarSubtab('sesiones');
+
+    await Promise.all([cargarSesiones(), cargarInformes(), cargarPruebasResultado()]);
+  }
+
+  $('perfilEstadoActual').addEventListener('change', async (ev) => {
+    if (!estudianteActivo) return;
+    const nuevoEstado = ev.target.value;
+    const { error } = await supabaseClient
+      .from('estudiantes')
+      .update({ estado_actual: nuevoEstado })
+      .eq('dni', estudianteActivo.dni);
+
+    if (error) {
+      alert('No se pudo actualizar el estado: ' + error.message);
+      ev.target.value = estudianteActivo.estado_actual || 'Estable';
+      return;
+    }
+
+    estudianteActivo.estado_actual = nuevoEstado;
+    const enLista = estudiantes.find(e => e.dni === estudianteActivo.dni);
+    if (enLista) enLista.estado_actual = nuevoEstado;
+    renderTabla();
+  });
+
+  $('btnVolverLista').addEventListener('click', () => {
+    $('vistaPerfil').classList.add('hidden');
+    $('vistaLista').classList.remove('hidden');
+    estudianteActivo = null;
+  });
+
+  document.querySelectorAll('.subtab').forEach(btn => {
+    btn.addEventListener('click', () => cambiarSubtab(btn.dataset.tab));
+  });
+  function cambiarSubtab(tab){
+    document.querySelectorAll('.subtab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+    $('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+  }
+
+  // ---------- Reportes de sesión ----------
+  // Agrupa una lista de registros por mes (según la fecha indicada) y devuelve
+  // el HTML con un subtítulo de mes seguido de sus tarjetas, de más reciente a más antiguo.
+  function agruparPorMesHTML(registros, obtenerFecha, renderTarjeta){
+    const grupos = [];
+    const indicePorClave = {};
+
+    registros.forEach(r => {
+      const fecha = new Date(obtenerFecha(r) + 'T00:00:00');
+      const clave = `${fecha.getFullYear()}-${fecha.getMonth()}`;
+      if (!(clave in indicePorClave)) {
+        const etiqueta = fecha.toLocaleDateString('es-PE', { month: 'long', year: 'numeric' });
+        indicePorClave[clave] = grupos.length;
+        grupos.push({ etiqueta: etiqueta.charAt(0).toUpperCase() + etiqueta.slice(1), items: [] });
+      }
+      grupos[indicePorClave[clave]].items.push(r);
+    });
+
+    return grupos.map(grupo => `
+      <div>
+        <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-bold mb-3">${grupo.etiqueta}</p>
+        <div class="space-y-3">
+          ${grupo.items.map(renderTarjeta).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  let sesionEditandoId = null;
+
+  async function cargarSesiones(){
+    const { data } = await supabaseClient.from('reportes_sesion').select('*')
+      .eq('dni_estudiante', estudianteActivo.dni).order('fecha_atencion', { ascending: false });
+    const cont = $('listaSesiones');
+    const registros = data || [];
+    $('sesionesVacio').classList.toggle('hidden', registros.length > 0);
+
+    cont.innerHTML = agruparPorMesHTML(registros, r => r.fecha_atencion, r => `
+      <div class="card rounded-xl p-4 flex items-center justify-between gap-4" data-id="${r.id}">
+        <div>
+          <p class="font-semibold text-sm">Sesión N.º ${r.numero_sesion} · ${fmtFecha(r.fecha_atencion)}</p>
+          <p class="text-xs text-[var(--ink-muted)] mt-0.5">${r.metodo_tecnica || 'Sin técnica registrada'}</p>
+        </div>
+        <div class="flex items-center gap-2 whitespace-nowrap">
+          <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-editar-sesion" title="Editar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-preview">Vista previa</button>
+        </div>
+      </div>`);
+
+    cont.querySelectorAll('[data-id]').forEach(div => {
+      const r = registros.find(x => x.id === div.dataset.id);
+      div.querySelector('.btn-preview').addEventListener('click', () => previsualizarSesion(r));
+      div.querySelector('.btn-editar-sesion').addEventListener('click', () => editarSesion(r));
+    });
+  }
+
+  function editarSesion(r){
+    sesionEditandoId = r.id;
+    const f = $('formSesion');
+    f.reset();
+    f.fecha_atencion.value = r.fecha_atencion;
+    f.numero_sesion.value = r.numero_sesion;
+    f.metodo_tecnica.value = r.metodo_tecnica || '';
+    f.resumen_sesion.value = r.resumen_sesion || '';
+    f.conclusion_observaciones.value = r.conclusion_observaciones || '';
+    f.actividades_compromisos.value = r.actividades_compromisos || '';
+    f.nombre_psicologo.value = r.nombre_psicologo || NOMBRE_PROFESIONAL;
+    f.numero_colegiatura.value = r.numero_colegiatura || obtenerColegiatura();
+    $('editorSesionEyebrow').textContent = 'Editando reporte de sesión para';
+    $('editorSesionNombre').textContent = `${estudianteActivo.nombres} ${estudianteActivo.apellidos}`;
+    mostrarEditor('vistaEditorSesion');
+  }
+
+  $('btnNuevaSesion').addEventListener('click', () => {
+    sesionEditandoId = null;
+    $('formSesion').reset();
+    $('formSesion').nombre_psicologo.value = NOMBRE_PROFESIONAL;
+    $('formSesion').numero_colegiatura.value = obtenerColegiatura();
+    $('editorSesionEyebrow').textContent = 'Nuevo reporte de sesión para';
+    $('editorSesionNombre').textContent = `${estudianteActivo.nombres} ${estudianteActivo.apellidos}`;
+    mostrarEditor('vistaEditorSesion');
+  });
+  $('btnCancelarSesion').addEventListener('click', ocultarEditores);
+  $('btnCancelarSesion2').addEventListener('click', ocultarEditores);
+
+  $('formSesion').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const f = ev.target;
+    const payload = {
+      dni_estudiante: estudianteActivo.dni,
+      fecha_atencion: f.fecha_atencion.value,
+      numero_sesion: Number(f.numero_sesion.value),
+      metodo_tecnica: f.metodo_tecnica.value.trim(),
+      resumen_sesion: f.resumen_sesion.value.trim(),
+      conclusion_observaciones: f.conclusion_observaciones.value.trim(),
+      actividades_compromisos: f.actividades_compromisos.value.trim(),
+      nombre_psicologo: f.nombre_psicologo.value.trim(),
+      numero_colegiatura: f.numero_colegiatura.value.trim(),
+    };
+    const { error } = sesionEditandoId
+      ? await supabaseClient.from('reportes_sesion').update(payload).eq('id', sesionEditandoId)
+      : await supabaseClient.from('reportes_sesion').insert(payload);
+    if (error) { alert('Error al guardar: ' + error.message); return; }
+    sesionEditandoId = null;
+    ocultarEditores();
+    cargarSesiones();
+  });
+
+  function previsualizarSesion(r){
+    $('printArea').innerHTML = `
+      ${encabezadoDocumento('Reporte de Sesión Psicológica')}
+      ${bloqueIdentificacion(estudianteActivo, r.fecha_atencion, r.numero_sesion)}
+      ${seccionRomana(2, 'Datos de la Sesión', `
+        <div class="doc-kv-row"><span class="doc-kv-label">Método / técnica empleada</span><span>${r.metodo_tecnica || '—'}</span></div>
+      `, true)}
+      ${seccionRomana(3, 'Resumen de la Sesión', parrafoJustificado(r.resumen_sesion))}
+      ${seccionRomana(4, 'Conclusión y Observaciones', parrafoJustificado(r.conclusion_observaciones))}
+      ${seccionRomana(5, 'Actividades y Compromisos', parrafoJustificado(r.actividades_compromisos))}
+      ${bloqueFirma(r.nombre_psicologo, r.numero_colegiatura)}
+    `;
+    abrirModal('modalPreview');
+  }
+
+  // ---------- Informes psicológicos ----------
+  let informeEditandoId = null;
+
+  async function cargarInformes(){
+    const { data } = await supabaseClient.from('informes_psicologicos').select('*')
+      .eq('dni_estudiante', estudianteActivo.dni).order('fecha_emision', { ascending: false });
+    const cont = $('listaInformes');
+    const registros = data || [];
+    $('informesVacio').classList.toggle('hidden', registros.length > 0);
+
+    cont.innerHTML = agruparPorMesHTML(registros, r => r.fecha_emision, r => `
+      <div class="card rounded-xl p-4 flex items-center justify-between gap-4" data-id="${r.id}">
+        <div>
+          <p class="font-semibold text-sm">Informe del ${fmtFecha(r.fecha_emision)}</p>
+          <p class="text-xs text-[var(--ink-muted)] mt-0.5">${(r.motivo_consulta || 'Sin motivo registrado').slice(0,80)}</p>
+        </div>
+        <div class="flex items-center gap-2 whitespace-nowrap">
+          <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-editar-informe" title="Editar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-preview">Vista previa</button>
+        </div>
+      </div>`);
+
+    cont.querySelectorAll('[data-id]').forEach(div => {
+      const r = registros.find(x => x.id === div.dataset.id);
+      div.querySelector('.btn-preview').addEventListener('click', () => previsualizarInforme(r));
+      div.querySelector('.btn-editar-informe').addEventListener('click', () => editarInforme(r));
+    });
+  }
+
+  function editarInforme(r){
+    informeEditandoId = r.id;
+    const f = $('formInforme');
+    f.reset();
+    f.fecha_emision.value = r.fecha_emision;
+    f.motivo_consulta.value = r.motivo_consulta || '';
+    f.instrumentos_utilizados.value = r.instrumentos_utilizados || '';
+    f.observacion_relato.value = r.observacion_relato || '';
+    f.resultados_prueba.value = r.resultados_prueba || '';
+    f.analisis_psicologico.value = r.analisis_psicologico || '';
+    f.recomendaciones.value = r.recomendaciones || '';
+    f.conclusiones.value = r.conclusiones || '';
+    f.nombre_psicologo.value = r.nombre_psicologo || NOMBRE_PROFESIONAL;
+    f.numero_colegiatura.value = r.numero_colegiatura || obtenerColegiatura();
+    $('editorInformeEyebrow').textContent = 'Editando informe psicológico para';
+    $('editorInformeNombre').textContent = `${estudianteActivo.nombres} ${estudianteActivo.apellidos}`;
+    mostrarEditor('vistaEditorInforme');
+  }
+
+  $('btnNuevoInforme').addEventListener('click', () => {
+    informeEditandoId = null;
+    $('formInforme').reset();
+    $('formInforme').nombre_psicologo.value = NOMBRE_PROFESIONAL;
+    $('formInforme').numero_colegiatura.value = obtenerColegiatura();
+    $('editorInformeEyebrow').textContent = 'Nuevo informe psicológico para';
+    $('editorInformeNombre').textContent = `${estudianteActivo.nombres} ${estudianteActivo.apellidos}`;
+    mostrarEditor('vistaEditorInforme');
+  });
+  $('btnCancelarInforme').addEventListener('click', ocultarEditores);
+  $('btnCancelarInforme2').addEventListener('click', ocultarEditores);
+
+  $('formInforme').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const f = ev.target;
+    const payload = {
+      dni_estudiante: estudianteActivo.dni,
+      fecha_emision: f.fecha_emision.value,
+      motivo_consulta: f.motivo_consulta.value.trim(),
+      instrumentos_utilizados: f.instrumentos_utilizados.value.trim(),
+      observacion_relato: f.observacion_relato.value.trim(),
+      resultados_prueba: f.resultados_prueba.value.trim(),
+      analisis_psicologico: f.analisis_psicologico.value.trim(),
+      recomendaciones: f.recomendaciones.value.trim(),
+      conclusiones: f.conclusiones.value.trim(),
+      nombre_psicologo: f.nombre_psicologo.value.trim(),
+      numero_colegiatura: f.numero_colegiatura.value.trim(),
+    };
+    const { error } = informeEditandoId
+      ? await supabaseClient.from('informes_psicologicos').update(payload).eq('id', informeEditandoId)
+      : await supabaseClient.from('informes_psicologicos').insert(payload);
+    if (error) { alert('Error al guardar: ' + error.message); return; }
+    informeEditandoId = null;
+    ocultarEditores();
+    cargarInformes();
+  });
+
+  function previsualizarInforme(r){
+    $('printArea').innerHTML = `
+      ${encabezadoDocumento('Informe Psicológico')}
+      ${bloqueIdentificacion(estudianteActivo, r.fecha_emision)}
+      ${seccionRomana(2, 'Motivo de Consulta', parrafoJustificado(r.motivo_consulta))}
+      ${seccionRomana(3, 'Instrumentos Utilizados', parrafoJustificado(r.instrumentos_utilizados))}
+      ${seccionRomana(4, 'Observación y Relato', parrafoJustificado(r.observacion_relato))}
+      ${seccionRomana(5, 'Resultados de Prueba', parrafoJustificado(r.resultados_prueba))}
+      ${seccionRomana(6, 'Análisis Psicológico', parrafoJustificado(r.analisis_psicologico))}
+      ${seccionRomana(7, 'Recomendaciones', parrafoJustificado(r.recomendaciones))}
+      ${seccionRomana(8, 'Conclusiones', parrafoJustificado(r.conclusiones))}
+      ${bloqueFirma(r.nombre_psicologo, r.numero_colegiatura)}
+    `;
+    abrirModal('modalPreview');
+  }
+
+  // ---------- Pruebas psicológicas / corrección automática ----------
+  async function cargarPruebasResultado(){
+    const { data } = await supabaseClient.from('resultados_pruebas').select('*')
+      .eq('dni_estudiante', estudianteActivo.dni).order('fecha_aplicacion', { ascending: false });
+    const cont = $('listaPruebasResultados'); cont.innerHTML = '';
+    $('pruebasVacio').classList.toggle('hidden', (data || []).length > 0);
+    (data || []).forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'card rounded-xl p-4 flex items-center justify-between gap-4';
+      const estadoColor = r.estado === 'corregido' ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-amber-50 text-amber-700';
+      div.innerHTML = `
+        <div>
+          <p class="font-semibold text-sm">${r.nombre_prueba}</p>
+          <p class="text-xs text-[var(--ink-muted)] mt-0.5">Aplicada el ${fmtFecha(r.fecha_aplicacion)}</p>
+        </div>
+        <div class="flex items-center gap-2 whitespace-nowrap">
+          <span class="badge ${estadoColor}">${r.estado}</span>
+          ${r.estado !== 'corregido'
+            ? `<button class="btn-primary rounded-xl px-3 py-1.5 text-xs font-semibold btn-corregir">Generar corrección</button>`
+            : `<button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-preview">Vista previa</button>`
+          }
+        </div>`;
+      if (r.estado !== 'corregido') {
+        div.querySelector('.btn-corregir').addEventListener('click', (e) => corregirPrueba(r, e.target));
+      } else {
+        div.querySelector('.btn-preview').addEventListener('click', () => previsualizarPrueba(r));
+      }
+      cont.appendChild(div);
+    });
+  }
+
+  async function corregirPrueba(resultado, btn){
+    btn.disabled = true; btn.textContent = 'Procesando…';
+
+    let baremo = [];
+    if (resultado.id_prueba) {
+      const { data: prueba } = await supabaseClient.from('pruebas_catalogo').select('baremo_json').eq('id', resultado.id_prueba).single();
+      baremo = prueba?.baremo_json || [];
+    }
+
+    const puntaje = (resultado.respuestas_json || []).reduce((acc, r) => acc + (Number(r.valor) || 0), 0);
+    let interpretacion = 'Sin baremo configurado para esta prueba.';
+    const rango = baremo.find(b => puntaje >= b.min && puntaje <= b.max);
+    if (rango) interpretacion = rango.interpretacion;
+
+    const { error } = await supabaseClient.from('resultados_pruebas').update({
+      puntaje_obtenido: puntaje,
+      interpretacion_automatica: interpretacion,
+      estado: 'corregido'
+    }).eq('id', resultado.id);
+
+    if (error) { alert('Error al corregir: ' + error.message); btn.disabled = false; btn.textContent = 'Generar corrección'; return; }
+    cargarPruebasResultado();
+  }
+
+  function previsualizarPrueba(r){
+    const respuestasHtml = (r.respuestas_json || []).map((it, i) =>
+      `<tr><td class="py-1.5 pr-4 text-sm">${i+1}. ${it.texto}</td><td class="py-1.5 text-sm font-semibold text-right">${it.valor}</td></tr>`
+    ).join('');
+    $('printArea').innerHTML = `
+      <h2 class="font-display text-xl font-bold tracking-tight mb-1">Informe de Resultados: ${r.nombre_prueba}</h2>
+      <p class="text-sm text-[var(--ink-muted)] mb-6">${estudianteActivo.nombres} ${estudianteActivo.apellidos} · DNI ${estudianteActivo.dni} · ${estudianteActivo.institucion}</p>
+      ${filaPreview('Fecha de aplicación', fmtFecha(r.fecha_aplicacion))}
+      ${filaPreview('Puntaje obtenido', String(r.puntaje_obtenido ?? '—'))}
+      ${filaPreview('Interpretación automática', r.interpretacion_automatica || '—')}
+      <h3 class="font-display text-base font-semibold mt-6 mb-2">Detalle de respuestas</h3>
+      <table class="w-full border-t" style="border-color:var(--border)"><tbody>${respuestasHtml}</tbody></table>
+    `;
+    abrirModal('modalPreview');
+  }
+
+  function filaPreview(label, valor){
+    return `<div class="mb-4">
+      <p class="text-xs uppercase tracking-widest text-[var(--ink-muted)] font-semibold mb-1">${label}</p>
+      <p class="text-sm whitespace-pre-line">${valor && valor.trim() ? valor : '—'}</p>
+    </div>`;
+  }
+
+  $('btnImprimir').addEventListener('click', () => window.print());
+
+  // ============================================================
+  // REPORTES POR RANGO DE FECHAS
+  // ============================================================
+  let rfFilas = [];
+  let rfOrdenAsc = true;
+
+  $('rfBtnBuscar').addEventListener('click', rfBuscar);
+
+  async function rfBuscar(){
+    const inicio = $('rfFechaInicio').value;
+    const fin = $('rfFechaFin').value;
+    if (!inicio || !fin) { alert('Selecciona ambas fechas.'); return; }
+
+    $('rfBtnBuscar').disabled = true;
+    $('rfBtnBuscar').textContent = 'Buscando…';
+
+    const { data, error } = await supabaseClient
+      .from('reportes_sesion')
+      .select('fecha_atencion, estudiantes ( apellidos, nombres, institucion, carrera )')
+      .gte('fecha_atencion', inicio)
+      .lte('fecha_atencion', fin)
+      .order('fecha_atencion');
+
+    $('rfBtnBuscar').disabled = false;
+    $('rfBtnBuscar').textContent = 'Buscar atenciones';
+
+    if (error) { alert('Error al buscar: ' + error.message); return; }
+
+    rfFilas = (data || [])
+      .filter(r => r.estudiantes)
+      .map(r => ({
+        apellidos: r.estudiantes.apellidos,
+        nombres: r.estudiantes.nombres,
+        institucion: r.estudiantes.institucion,
+        carrera: r.estudiantes.carrera,
+        fecha_atencion: r.fecha_atencion
+      }));
+
+    rfRenderTabla();
+  }
+
+  function rfRenderTabla(){
+    const tbody = $('rfTablaReporte');
+    tbody.innerHTML = '';
+    $('rfReporteVacio').classList.toggle('hidden', rfFilas.length > 0);
+
+    rfFilas.forEach(f => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="px-5 py-3 font-medium">${f.apellidos}, ${f.nombres}</td>
+        <td class="px-5 py-3">${f.institucion}</td>
+        <td class="px-5 py-3">${f.carrera || '—'}</td>
+        <td class="px-5 py-3">${fmtFecha(f.fecha_atencion)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  $('rfThNombre').addEventListener('click', () => {
+    rfOrdenAsc = !rfOrdenAsc;
+    rfFilas.sort((a, b) => {
+      const A = `${a.apellidos} ${a.nombres}`.toLowerCase();
+      const B = `${b.apellidos} ${b.nombres}`.toLowerCase();
+      return rfOrdenAsc ? A.localeCompare(B) : B.localeCompare(A);
+    });
+    $('rfThNombre').querySelector('.sort-arrow').textContent = rfOrdenAsc ? '▲' : '▼';
+    rfRenderTabla();
+  });
+
+  $('rfBtnPreview').addEventListener('click', () => {
+    if (rfFilas.length === 0) { alert('No hay datos para mostrar. Realiza una búsqueda primero.'); return; }
+    const inicio = fmtFecha($('rfFechaInicio').value);
+    const fin = fmtFecha($('rfFechaFin').value);
+    const filasHtml = rfFilas.map(f => `
+      <tr>
+        <td class="py-2 pr-4 text-sm border-t" style="border-color:var(--border)">${f.apellidos}, ${f.nombres}</td>
+        <td class="py-2 pr-4 text-sm border-t" style="border-color:var(--border)">${f.institucion}</td>
+        <td class="py-2 pr-4 text-sm border-t" style="border-color:var(--border)">${f.carrera || '—'}</td>
+        <td class="py-2 text-sm border-t" style="border-color:var(--border)">${fmtFecha(f.fecha_atencion)}</td>
+      </tr>`).join('');
+
+    $('rfPrintArea').innerHTML = `
+      <h2 class="font-display text-xl font-bold tracking-tight mb-1">Reporte de Atenciones</h2>
+      <p class="text-sm text-[var(--ink-muted)] mb-6">Periodo: ${inicio} — ${fin} · Total de atenciones: ${rfFilas.length}</p>
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="text-left text-xs uppercase tracking-wide text-[var(--ink-muted)] pb-2">Apellidos y Nombres</th>
+            <th class="text-left text-xs uppercase tracking-wide text-[var(--ink-muted)] pb-2">Institución</th>
+            <th class="text-left text-xs uppercase tracking-wide text-[var(--ink-muted)] pb-2">Carrera</th>
+            <th class="text-left text-xs uppercase tracking-wide text-[var(--ink-muted)] pb-2">Fecha de atención</th>
+          </tr>
+        </thead>
+        <tbody>${filasHtml}</tbody>
+      </table>
+    `;
+    $('rfModalPreview').classList.remove('hidden');
+  });
+
+  $('rfBtnCerrarPreview').addEventListener('click', () => $('rfModalPreview').classList.add('hidden'));
+  $('rfBtnImprimir').addEventListener('click', () => window.print());
+
+  // ---------- Inicio ----------
+  cargarEstudiantes();
+</script>
+</body>
+</html>
