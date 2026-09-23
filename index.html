@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <style>
   /* ==========================================================================
      GUÍA DE ESTILOS — Portal del Psicólogo
@@ -106,11 +109,246 @@
   .success-icon-ring{ background:var(--success-soft); box-shadow:0 0 0 8px rgba(63,122,93,.06); }
   .success-check{ stroke:var(--success); }
 
+  /* ==========================================================================
+     FICHA INTEGRAL DEL ESTUDIANTE — documento formal de alta gama
+     Paleta sobria: azul marino institucional + grises neutros. Bordes finos,
+     esquinas casi rectas, tipografía Inter. Cero elementos "infantiles".
+     ========================================================================== */
+  .ficha-clinica-shell{
+    background:#ffffff; border:1px solid #d1d5db; border-radius:6px;
+    box-shadow:0 18px 46px -18px rgba(17,24,39,.30);
+    font-family:'Inter',Arial,sans-serif;
+  }
+  .ficha-clinica-toolbar{
+    background:#f9fafb; border-bottom:1px solid #d1d5db; border-radius:6px 6px 0 0;
+  }
+  .btn-clinico{
+    font-family:'Inter',Arial,sans-serif; border-radius:4px; border:1px solid #d1d5db;
+    background:#ffffff; color:#1f2937; transition:background-color .15s, border-color .15s;
+  }
+  .btn-clinico:hover{ background:#f3f4f6; border-color:#9ca3af; }
+  .btn-clinico-primary{
+    font-family:'Inter',Arial,sans-serif; border-radius:4px; border:1px solid var(--primary);
+    background:var(--primary); color:#ffffff; transition:background-color .15s;
+  }
+  .btn-clinico-primary:hover{ background:var(--primary-hover); }
+
+  /* Cabecera de la Ficha Integral: barra con icono + título, sin badges
+     ni textos laterales — solo el nombre del documento. */
+  .ficha-header-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:18px 24px; border-bottom:1px solid #d1d5db; flex-wrap:wrap;
+  }
+  .ficha-header-left{ display:flex; align-items:center; gap:12px; min-width:0; }
+  .ficha-header-icon{
+    width:34px; height:34px; border-radius:8px; background:var(--primary);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .ficha-header-titlewrap{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .ficha-header-title{
+    font-family:'Inter',Arial,sans-serif; font-weight:800; font-size:.9375rem; letter-spacing:.01em;
+    text-transform:uppercase; color:var(--primary); line-height:1.25;
+  }
+  .ficha-header-sub{ font-size:.6875rem; color:#6b7280; font-family:'Inter',Arial,sans-serif; }
+
+  /* Secciones numeradas: título con barra de acento + campos, sin tarjetas
+     independientes — fluyen en un único documento separado por líneas finas. */
+  .ficha-secciones{ padding-bottom:8px; }
+  .ficha-seccion{ padding:18px 0; border-bottom:1px solid #e5e7eb; }
+  .ficha-seccion:last-child{ border-bottom:none; }
+  .ficha-seccion-title{
+    display:flex; align-items:center; gap:8px; margin:0 0 12px;
+  }
+  .ficha-seccion-title::before{
+    content:''; width:4px; height:15px; background:var(--primary); border-radius:2px; flex-shrink:0;
+  }
+  .ficha-seccion-title span{
+    font-family:'Inter',Arial,sans-serif; font-weight:700; font-size:.75rem; letter-spacing:.04em;
+    text-transform:uppercase; color:var(--primary);
+  }
+  .ficha-clinica-footnote{
+    text-align:center; font-size:.6875rem; color:#6b7280; margin-top:16px; padding-bottom:20px; font-family:'Inter',Arial,sans-serif;
+  }
+
+  /* Campos como "cajitas" clínicas independientes en la FICHA DE SOLO LECTURA:
+     ancho dinámico ajustado al contenido (flex-wrap), nunca columnas forzadas
+     a un mismo ancho — así "Edad" no ocupa lo mismo que "Fecha de nacimiento". */
+  .ficha-field-grid{ display:flex; flex-wrap:wrap; align-items:stretch; gap:8px 10px; }
+  .ficha-field-box{
+    border:1px solid #d9dee3; border-radius:5px; background:#ffffff;
+    padding:5px 9px; display:inline-flex; flex-direction:column; gap:2px;
+    flex:0 0 auto; max-width:100%;
+  }
+  .ficha-field-box .ficha-field-label{ white-space:nowrap; }
+  .ficha-field-box .ficha-field-value{ white-space:nowrap; }
+  .ficha-field-box.destacado{ border-color:#b9c4cd; }
+  .ficha-field-box.full{ flex:0 0 auto; width:auto; max-width:100%; }
+  .ficha-field-box.full .ficha-field-value{ white-space:nowrap; }
+
+  /* Cuadrícula del FORMULARIO editable (alta/edición): columnas fijas, ideal
+     para alinear inputs de forma consistente al capturar datos. */
+  /* Antes era CSS grid de columnas iguales (1fr cada una), lo que forzaba a
+     cuadros como "Edad" o "DNI" a estirarse al mismo ancho que campos mucho
+     más largos. Ahora es un flujo flexible: cada cuadro mide únicamente lo
+     que su etiqueta/contenido necesita, igual que en la ficha de solo lectura. */
+  .ficha-form-grid{ display:flex; flex-wrap:wrap; align-items:flex-start; gap:8px 10px; }
+  .ficha-form-grid-2, .ficha-form-grid-3, .ficha-form-grid-4{ display:flex; flex-wrap:wrap; }
+
+  /* ----- Formulario (alta/edición): mismas "cajitas clínicas" pero editables ----- */
+  .ficha-form-box{
+    border:1px solid #cbd5e1; border-radius:5px; background:#fafafa;
+    padding:5px 9px 6px; display:inline-flex; flex-direction:column; gap:2px;
+    flex:0 0 auto; max-width:100%;
+    transition:border-color .15s, background-color .15s;
+  }
+  .ficha-form-box:focus-within{ border-color:#1B3A57; background:#ffffff; box-shadow:0 0 0 3px var(--primary-soft); }
+  /* .full sigue existiendo para los pocos campos que sí necesitan ancho
+     completo (correo, dirección, textos libres largos) */
+  .ficha-form-box.full{ flex:1 1 100%; width:100%; }
+  .ficha-form-label{
+    font-size:.625rem; letter-spacing:.05em; text-transform:uppercase; color:#6b7280;
+    font-weight:600; font-family:'Inter',Arial,sans-serif;
+  }
+  /* Contenido en letra normal (nunca negrita) — el ancho lo da el atributo
+     "size" del input o el contenido del <select>, nunca un 100% forzado,
+     salvo dentro de una .ficha-form-box.full */
+  .ficha-form-box input, .ficha-form-box select{
+    border:none !important; padding:0 !important; box-shadow:none !important; background:transparent !important;
+    font-size:.75rem; font-weight:400; color:#111827; width:auto; min-width:0; max-width:100%;
+  }
+  .ficha-form-box input[type="date"]{ width:9em; }
+  .ficha-form-box input[type="number"]{ width:6em; }
+  .ficha-form-box.full input, .ficha-form-box.full select{ width:100%; }
+  .ficha-form-box textarea{
+    border:none !important; padding:0 !important; box-shadow:none !important; background:transparent !important;
+    font-size:.75rem; font-weight:400; color:#111827; width:100%; resize:vertical;
+  }
+  .ficha-form-box input:focus, .ficha-form-box select:focus, .ficha-form-box textarea:focus{ box-shadow:none !important; }
+  .ficha-form-section{
+    background:#ffffff; border:1px solid #d1d5db; border-radius:6px; overflow:hidden;
+  }
+  .ficha-form-section-header{
+    background:#f9fafb; border-bottom:1px solid #d1d5db; padding:10px 14px 10px 12px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .ficha-form-section-header .ficha-form-section-title{
+    display:flex; align-items:center; gap:8px; margin:0;
+  }
+  .ficha-form-section-header .ficha-form-section-title::before{
+    content:''; width:4px; height:14px; background:var(--primary); border-radius:2px; flex-shrink:0; display:inline-block;
+  }
+  .ficha-form-section-title{
+    font-family:'Inter',Arial,sans-serif; font-weight:700; font-size:.75rem;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--primary); margin:0;
+  }
+  .ficha-form-section-body{ padding:14px; }
+  .ficha-field-label{
+    font-size:.625rem; letter-spacing:.05em; text-transform:uppercase; color:#6b7280;
+    font-weight:600; font-family:'Inter',Arial,sans-serif;
+  }
+  .ficha-field-value{
+    font-size:.75rem; color:#111827; font-weight:400; font-family:'Inter',Arial,sans-serif;
+    word-break:break-word;
+  }
+
+  /* Tabla formal — Composición familiar */
+  .ficha-clinica-table{ width:100%; border-collapse:collapse; font-family:'Inter',Arial,sans-serif; font-size:.8125rem; }
+  .ficha-clinica-table th{
+    background:#f3f4f6; border:1px solid #d1d5db; padding:7px 10px; text-align:left;
+    font-size:.6875rem; letter-spacing:.04em; text-transform:uppercase; color:#374151; font-weight:700;
+  }
+  .ficha-clinica-table td{ border:1px solid #d1d5db; padding:7px 10px; color:#111827; }
+  .ficha-clinica-table tbody tr:nth-child(even){ background:#fafafa; }
+  .ficha-clinica-table-empty{ text-align:center; color:#9ca3af; font-style:italic; padding:14px !important; }
+
+  /* Antecedentes de salud: dos cajitas al final */
+  .ficha-antecedentes-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width: 640px){ .ficha-antecedentes-grid{ grid-template-columns:1fr; } }
+  .ficha-antecedente-box{ border:1px solid #d1d5db; border-radius:4px; background:#fafafa; }
+  .ficha-antecedente-box-header{
+    background:#f3f4f6; border-bottom:1px solid #d1d5db; padding:8px 12px;
+    font-size:.6875rem; letter-spacing:.05em; text-transform:uppercase; font-weight:700; color:#1B3A57;
+    font-family:'Inter',Arial,sans-serif;
+  }
+  .ficha-antecedente-box-body{
+    padding:12px; font-size:.8125rem; color:#111827; line-height:1.6; white-space:pre-line;
+    font-family:'Inter',Arial,sans-serif; min-height:60px;
+  }
+
+  /* ------------------------------------------------------------------------
+     Estas reglas NO están dentro de @media print a propósito: se activan con
+     la clase body.imprimiendo-ficha, que se añade tanto al Imprimir (justo
+     antes de window.print()) como al Guardar como PDF (justo antes de que
+     html2pdf capture #vdPrintArea). Así, ambas salidas usan exactamente el
+     mismo layout "desbloqueado" — sin la altura acotada ni el scroll interno
+     del modal — y quedan milimétricamente idénticas entre sí y a lo que se
+     ve en pantalla al abrir "Ver datos".
+     ------------------------------------------------------------------------ */
+  body.imprimiendo-ficha .no-print{ display:none !important; }
+  body.imprimiendo-ficha #modalVerDatos{
+    position:static !important; inset:auto !important; background:none !important;
+    padding:0 !important; display:block !important;
+  }
+  body.imprimiendo-ficha #modalVerDatos .ficha-clinica-shell{
+    position:static !important; max-height:none !important; overflow:visible !important;
+    box-shadow:none !important; border:none !important; width:auto !important; max-width:none !important;
+  }
+  body.imprimiendo-ficha #vdPrintArea{ position:static !important; top:auto !important; left:auto !important; padding:0 !important; }
+
+  /* Reglas de salto de página: no van dentro de @media print porque también
+     las necesita html2pdf al capturar la copia invisible fuera de pantalla
+     (fuera de un contexto de impresión real), así el PDF descargado respeta
+     los mismos cortes que la impresión de papel. */
+  #vdPrintArea .ficha-seccion{ page-break-inside:avoid; break-inside:avoid; }
+  #vdPrintArea .ficha-clinica-table{ page-break-inside:auto; }
+  #vdPrintArea .ficha-clinica-table tr{ page-break-inside:avoid; break-inside:avoid; }
+  #bdPrintArea thead{ display:table-header-group; }
+  #bdPrintArea tr{ page-break-inside:avoid; break-inside:avoid; }
+  #bdPrintArea .doc-section{ page-break-inside:auto; break-inside:auto; }
+  #bdPrintArea .doc-section-title{ page-break-after:avoid; break-after:avoid; }
+
   @media print{
     body *{ visibility:hidden; }
-    #printArea, #printArea *, #rfPrintArea, #rfPrintArea *{ visibility:visible; }
-    #printArea, #rfPrintArea{ position:absolute; top:0; left:0; width:100%; padding:24px; }
+    #printArea, #printArea *, #rfPrintArea, #rfPrintArea *, #bdPrintArea, #bdPrintArea *,
+    #vdPrintArea, #vdPrintArea *{ visibility:visible; }
+    #printArea, #rfPrintArea, #bdPrintArea, #vdPrintArea{ position:absolute; top:0; left:0; width:100%; padding:0; }
     .no-print{ display:none !important; }
+
+    /* El modal "Ficha Integral del Estudiante" también usa altura acotada
+       con scroll (max-h-[92vh] overflow-y-auto); se libera esa restricción
+       (regla compartida con Guardar como PDF, ver arriba) para que el
+       documento pagine con normalidad y respete los márgenes de una hoja A4. */
+    @page{ size:A4; margin:14mm; }
+    body.imprimiendo-ficha > *:not(#modalVerDatos){ display:none !important; }
+
+    /* -------------------------------------------------------------
+       Datos de becarios: el modal y su tarjeta usan posición fija
+       y altura acotada con scroll (max-h-[90vh] overflow-y-auto),
+       lo cual confunde la paginación del navegador y provoca que el
+       contenido se repita/superponga a partir de la página 2.
+       Se liberan esas restricciones SOLO durante la impresión.
+       ------------------------------------------------------------- */
+    #modalDatosBecarios{
+      position:static !important; inset:auto !important; background:none !important;
+      padding:0 !important; display:block !important;
+    }
+    #modalDatosBecarios .card{
+      position:static !important; max-height:none !important; overflow:visible !important;
+      box-shadow:none !important; width:auto !important; max-width:none !important;
+    }
+    #bdPrintArea{ position:static !important; top:auto !important; left:auto !important; padding:0 !important; }
+
+    /* Tamaño reducido solo para la hoja impresa (no afecta la vista previa
+       en pantalla ni la copia usada para generar el PDF). */
+    #bdPrintArea table{ font-size:.7rem; width:100%; border-collapse:collapse; }
+    #bdPrintArea th, #bdPrintArea td{ padding:4px 6px; }
+
+    /* Elimina las páginas en blanco iniciales: colapsa por completo
+       (display:none, no solo invisible) todo lo que está antes del
+       modal en el documento, para que el contenido empiece justo en
+       la página 1. Solo se activa mientras se imprime este reporte
+       (clase añadida por JS al hacer clic en "Imprimir/Guardar PDF"). */
+    body.imprimiendo-becarios > *:not(#modalDatosBecarios){ display:none !important; }
   }
 
   /* ==========================================================================
@@ -169,6 +407,10 @@
       <nav class="flex gap-2 text-sm">
         <button id="navEstudiantes" class="seccion-nav-btn px-3 py-1.5 rounded-xl bg-white/15 font-semibold">Estudiantes</button>
         <button id="navReportesFecha" class="seccion-nav-btn px-3 py-1.5 rounded-xl hover:bg-white/10">Reportes por fecha</button>
+        <button id="btnDatosBecarios" class="px-3 py-1.5 rounded-xl hover:bg-white/10 flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18M8 4v16" stroke="currentColor" stroke-width="1.8"/></svg>
+          Datos de becarios
+        </button>
         <button id="btnFirmaProfesional" class="px-3 py-1.5 rounded-xl hover:bg-white/10 flex items-center gap-1.5">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Firma profesional
@@ -212,13 +454,14 @@
         <table class="w-full text-sm">
           <thead class="bg-[var(--bg)]">
             <tr>
-              <th class="text-left px-5 py-3">Apellidos y Nombres</th>
-              <th class="text-left px-5 py-3">DNI</th>
-              <th class="text-left px-5 py-3">Institución</th>
-              <th class="text-left px-5 py-3">Carrera</th>
-              <th class="text-left px-5 py-3">Ciclo</th>
-              <th class="text-left px-5 py-3">Estado</th>
-              <th class="text-right px-5 py-3">Acciones</th>
+              <th class="text-center px-5 py-3">Apellidos y Nombres</th>
+              <th class="text-center px-5 py-3">DNI</th>
+              <th class="text-center px-5 py-3">Institución</th>
+              <th class="text-center px-5 py-3">Carrera</th>
+              <th class="text-center px-5 py-3">Ciclo</th>
+              <th class="text-center px-5 py-3">Estado académico</th>
+              <th class="text-center px-5 py-3">Estado</th>
+              <th class="text-center px-5 py-3">Acciones</th>
             </tr>
           </thead>
           <tbody id="tablaEstudiantes" class="divide-y" style="border-color:var(--border)"></tbody>
@@ -233,20 +476,38 @@
         ← Volver al listado
       </button>
 
-      <div class="card rounded-[22px] shadow-sm p-6 mb-6 flex flex-wrap items-center gap-x-10 gap-y-3">
-        <div>
-          <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Apellidos y Nombres</p>
-          <p id="perfilNombre" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p>
+      <div class="card rounded-[22px] shadow-sm p-6 mb-6">
+        <p id="perfilNombre" class="font-display text-[1.75rem] font-extrabold tracking-tight truncate"></p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-4 mt-5 pt-5 border-t" style="border-color:var(--border)">
+          <div>
+            <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Edad</p>
+            <p id="perfilEdad" class="text-sm font-semibold mt-0.5"></p>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">DNI</p>
+            <p id="perfilDni" class="text-sm font-semibold mt-0.5"></p>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Institución</p>
+            <p id="perfilInstitucion" class="text-sm font-semibold mt-0.5 truncate"></p>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Carrera</p>
+            <p id="perfilCarrera" class="text-sm font-semibold mt-0.5 truncate"></p>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Ciclo</p>
+            <p id="perfilCiclo" class="text-sm font-semibold mt-0.5"></p>
+          </div>
         </div>
-        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Edad</p><p id="perfilEdad" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p></div>
-        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">DNI</p><p id="perfilDni" class="font-display text-[1.75rem] font-extrabold tracking-tight"></p></div>
-        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Institución</p><p id="perfilInstitucion" class="text-lg font-medium"></p></div>
-        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Carrera</p><p id="perfilCarrera" class="text-lg font-medium"></p></div>
-        <div><p class="text-xs uppercase tracking-[.1em] text-[var(--ink-muted)] font-semibold">Ciclo</p><p id="perfilCiclo" class="text-lg font-medium"></p></div>
-        <button id="btnVerDatosPerfil" class="ml-auto btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold inline-flex items-center gap-1.5">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Ver datos completos
-        </button>
+
+        <div class="mt-5 pt-5 border-t flex justify-end" style="border-color:var(--border)">
+          <button id="btnVerDatosPerfil" class="btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold inline-flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver datos completos
+          </button>
+        </div>
       </div>
 
       <div class="card rounded-[22px] p-6 mb-6 flex flex-wrap items-center justify-between gap-4" style="border:1px solid var(--primary-soft); background:linear-gradient(180deg, var(--primary-soft) 0%, var(--surface) 60%);">
@@ -427,9 +688,24 @@
     </div>
   </div>
 
+  <!-- ============ MODAL: VISTA PREVIA — DATOS DE BECARIOS ============ -->
+  <div id="modalDatosBecarios" class="hidden fixed inset-0 flex items-center justify-center p-4 z-40" style="background:rgba(28,43,36,.45)">
+    <div class="card rounded-[22px] shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center px-6 py-4 border-b no-print" style="border-color:var(--border)">
+        <h3 class="font-display text-lg font-bold tracking-tight">Vista previa — Datos de becarios</h3>
+        <div class="flex gap-2">
+          <button id="bdBtnImprimir" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">Imprimir</button>
+          <button id="bdBtnPDF" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">Guardar como PDF</button>
+          <button id="bdBtnCerrarPreview" class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Cerrar</button>
+        </div>
+      </div>
+      <div id="bdPrintArea" class="p-8"></div>
+    </div>
+  </div>
+
   <!-- ============ MODAL: NUEVO / EDITAR ESTUDIANTE ============ -->
   <div id="modalEstudiante" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-40 no-print">
-    <div class="card modal-panel rounded-[22px] w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative">
+    <div class="card modal-panel rounded-[22px] w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative">
 
       <!-- FICHA: formulario -->
       <div id="fichaEstudiantePanel" class="ficha-panel">
@@ -437,56 +713,151 @@
           <h3 id="modalEstudianteTitulo" class="font-display text-xl font-bold tracking-tight">Nuevo estudiante</h3>
           <button class="cerrar-modal text-[var(--ink-muted)] hover:text-[var(--ink)] text-xl leading-none">&times;</button>
         </div>
-        <form id="formEstudiante" class="grid sm:grid-cols-2 gap-4">
-          <div><label class="field-label">DNI *</label>
-            <input required name="dni" id="campoDni" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div><label class="field-label">Fecha de nacimiento *</label>
-            <input required name="fecha_nacimiento" type="date" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div><label class="field-label">Apellidos *</label>
-            <input required name="apellidos" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div><label class="field-label">Nombres *</label>
-            <input required name="nombres" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div><label class="field-label">Celular</label>
-            <input name="celular" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div><label class="field-label">Correo</label>
-            <input name="correo" type="email" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div><label class="field-label">Teléfono de emergencia</label>
-            <input name="telefono_emergencia" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div><label class="field-label">Institución *</label>
-            <select required name="institucion" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
-              <option value="" disabled selected>Selecciona</option>
-              <option>UTP</option><option>USS</option><option>Senati</option><option>Cetemin</option><option>Valle Grande</option>
-            </select></div>
-          <div><label class="field-label">Ciclo *</label>
-            <input required name="ciclo" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div class="sm:col-span-2"><label class="field-label">Carrera *</label>
-            <input required name="carrera" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div class="sm:col-span-2"><label class="field-label">Modalidad de alojamiento actual *</label>
-            <select required name="modalidad_vivienda" id="campoModalidadVivienda" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
-              <option value="" disabled selected>Selecciona</option>
-              <option>Casa o cuarto alquilado</option>
-              <option>Vivienda de algún familiar</option>
-              <option>Vivienda propia</option>
-            </select></div>
-          <div id="campoGrupoMontoAlquiler" class="sm:col-span-2 hidden"><label class="field-label">Monto mensual de alquiler (S/) *</label>
-            <input name="monto_alquiler" id="campoMontoAlquiler" type="number" min="0" step="0.01" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div id="campoGrupoPagaAlquilerFamiliar" class="sm:col-span-2 hidden"><label class="field-label">¿Paga algún alquiler por el espacio que ocupa? *</label>
-            <select name="paga_alquiler_familiar" id="campoPagaAlquilerFamiliar" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
-              <option value="" disabled selected>Selecciona</option>
-              <option>Sí</option>
-              <option>No</option>
-            </select></div>
-          <div id="campoGrupoMontoAlquilerFamiliar" class="sm:col-span-2 hidden"><label class="field-label">Monto mensual que paga (S/) *</label>
-            <input name="monto_alquiler_familiar" id="campoMontoAlquilerFamiliar" type="number" min="0" step="0.01" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div class="sm:col-span-2"><label class="field-label">¿Vive solo o con alguien? *</label>
-            <select required name="convivencia" id="campoConvivencia" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm">
-              <option value="" disabled selected>Selecciona</option>
-              <option>Vive solo</option>
-              <option>Con alguien</option>
-            </select></div>
-          <div id="campoGrupoConvivenciaDetalle" class="sm:col-span-2 hidden"><label class="field-label">¿Con quién vive? *</label>
-            <input name="convivencia_detalle" id="campoConvivenciaDetalle" class="mt-1.5 w-full rounded-xl px-3 py-2.5 text-sm"></div>
-          <div class="sm:col-span-2 flex justify-end gap-3 mt-2">
+        <form id="formEstudiante" class="space-y-4">
+
+          <!-- 1. Datos de identificación -->
+          <div class="ficha-form-section">
+            <div class="ficha-form-section-header"><h4 class="ficha-form-section-title">1. Datos de identificación</h4></div>
+            <div class="ficha-form-section-body ficha-form-grid ficha-form-grid-3">
+              <div class="ficha-form-box"><label class="ficha-form-label">Apellidos *</label>
+                <input required name="apellidos" size="22"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Nombres *</label>
+                <input required name="nombres" size="22"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">DNI *</label>
+                <input required name="dni" id="campoDni" size="9"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Fecha de nacimiento *</label>
+                <input required name="fecha_nacimiento" type="date"></div>
+            </div>
+          </div>
+
+          <!-- 2. Información de contacto -->
+          <div class="ficha-form-section">
+            <div class="ficha-form-section-header"><h4 class="ficha-form-section-title">2. Información de contacto</h4></div>
+            <div class="ficha-form-section-body ficha-form-grid ficha-form-grid-2">
+              <div class="ficha-form-box full"><label class="ficha-form-label">Correo Electrónico</label>
+                <input name="correo" type="email" placeholder="Institucional o personal"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Teléfono</label>
+                <input name="celular" size="12"></div>
+              <div class="ficha-form-box full"><label class="ficha-form-label">Dirección Actual</label>
+                <input name="direccion_actual" placeholder="Calle/jirón, número, urbanización o distrito, provincia"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Teléfono de Emergencia *</label>
+                <input required name="telefono_emergencia" size="12"></div>
+            </div>
+          </div>
+
+          <!-- 3. Datos académicos -->
+          <div class="ficha-form-section">
+            <div class="ficha-form-section-header"><h4 class="ficha-form-section-title">3. Datos académicos</h4></div>
+            <div class="ficha-form-section-body ficha-form-grid ficha-form-grid-4">
+              <div class="ficha-form-box"><label class="ficha-form-label">Institución *</label>
+                <select required name="institucion">
+                  <option value="" disabled selected>Selecciona</option>
+                  <option>UTP</option><option>USS</option><option>Senati</option><option>Cetemin</option><option>Valle Grande</option>
+                </select></div>
+              <div class="ficha-form-box full"><label class="ficha-form-label">Facultad / Escuela profesional *</label>
+                <input required name="carrera"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Ciclo actual *</label>
+                <input required name="ciclo" size="4"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Situación académica *</label>
+                <select required name="estado_academico">
+                  <option>Matriculado</option>
+                  <option>Cursando el ciclo</option>
+                  <option>Matrícula pendiente</option>
+                  <option>Deserción académica</option>
+                </select></div>
+            </div>
+          </div>
+
+          <!-- 4. Composición familiar (tabla dinámica) -->
+          <div class="ficha-form-section">
+            <div class="ficha-form-section-header">
+              <h4 class="ficha-form-section-title">4. Composición familiar</h4>
+              <button type="button" id="btnAgregarFamiliar" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold inline-flex items-center gap-1">
+                <span class="text-base leading-none">+</span> Agregar integrante
+              </button>
+            </div>
+            <div class="ficha-form-section-body" style="padding:0;">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm" style="min-width:640px">
+                  <thead>
+                    <tr style="background:var(--surface-alt)">
+                      <th class="text-left px-3 py-2 field-label">Apellidos y nombres</th>
+                      <th class="text-left px-3 py-2 field-label">Parentesco</th>
+                      <th class="text-left px-3 py-2 field-label" style="width:70px">Edad</th>
+                      <th class="text-left px-3 py-2 field-label">Ocupación</th>
+                      <th class="text-left px-3 py-2 field-label">Situación / condición</th>
+                      <th class="px-2 py-2" style="width:36px"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="filasComposicionFamiliar"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Datos socioeconómicos y vivienda -->
+          <div class="ficha-form-section">
+            <div class="ficha-form-section-header"><h4 class="ficha-form-section-title">5. Datos socioeconómicos y vivienda</h4></div>
+            <div class="ficha-form-section-body ficha-form-grid ficha-form-grid-2">
+              <div class="ficha-form-box full"><label class="ficha-form-label">Modalidad de alojamiento actual *</label>
+                <select required name="modalidad_vivienda" id="campoModalidadVivienda">
+                  <option value="" disabled selected>Selecciona</option>
+                  <option>Casa o cuarto alquilado</option>
+                  <option>Vivienda de algún familiar</option>
+                  <option>Vivienda propia</option>
+                </select></div>
+              <div id="campoGrupoMontoAlquiler" class="ficha-form-box hidden"><label class="ficha-form-label">Monto mensual de alquiler (S/) *</label>
+                <input name="monto_alquiler" id="campoMontoAlquiler" type="number" min="0" step="0.01"></div>
+              <div id="campoGrupoPagaAlquilerFamiliar" class="ficha-form-box hidden"><label class="ficha-form-label">¿Paga algún alquiler por el espacio que ocupa? *</label>
+                <select name="paga_alquiler_familiar" id="campoPagaAlquilerFamiliar">
+                  <option value="" disabled selected>Selecciona</option>
+                  <option>Sí</option>
+                  <option>No</option>
+                </select></div>
+              <div id="campoGrupoMontoAlquilerFamiliar" class="ficha-form-box hidden"><label class="ficha-form-label">Monto mensual que paga (S/) *</label>
+                <input name="monto_alquiler_familiar" id="campoMontoAlquilerFamiliar" type="number" min="0" step="0.01"></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">¿Vive solo o con alguien? *</label>
+                <select required name="convivencia" id="campoConvivencia">
+                  <option value="" disabled selected>Selecciona</option>
+                  <option>Vive solo</option>
+                  <option>Con alguien</option>
+                </select></div>
+              <div id="campoGrupoConvivenciaDetalle" class="ficha-form-box full hidden"><label class="ficha-form-label">¿Con quién vive? *</label>
+                <input name="convivencia_detalle" id="campoConvivenciaDetalle"></div>
+            </div>
+          </div>
+
+          <!-- 6. Datos sociolaborales / estado laboral actual -->
+          <div class="ficha-form-section">
+            <div class="ficha-form-section-header"><h4 class="ficha-form-section-title">6. Datos sociolaborales / Estado laboral actual</h4></div>
+            <div class="ficha-form-section-body ficha-form-grid ficha-form-grid-3">
+              <div class="ficha-form-box"><label class="ficha-form-label">¿Trabaja actualmente? *</label>
+                <select required name="trabaja_actualmente" id="campoTrabajaActualmente">
+                  <option value="" disabled selected>Selecciona</option>
+                  <option>Sí</option>
+                  <option>No</option>
+                </select></div>
+              <div id="campoGrupoLugarTrabajo" class="ficha-form-box hidden"><label class="ficha-form-label">Lugar de trabajo *</label>
+                <input name="lugar_trabajo" id="campoLugarTrabajo" size="18"></div>
+              <div id="campoGrupoOcupacionActual" class="ficha-form-box hidden"><label class="ficha-form-label">Ocupación *</label>
+                <input name="ocupacion_actual" id="campoOcupacionActual" size="18"></div>
+              <div id="campoGrupoHorarioTrabajo" class="ficha-form-box full hidden"><label class="ficha-form-label">Horario *</label>
+                <input name="horario_trabajo" id="campoHorarioTrabajo" placeholder="Ej. Lunes a viernes, 9:00 a.m. – 6:00 p.m."></div>
+            </div>
+          </div>
+
+          <!-- 7. Antecedentes de salud y clínicos -->
+          <div class="ficha-form-section">
+            <div class="ficha-form-section-header"><h4 class="ficha-form-section-title">7. Antecedentes de salud y clínicos</h4></div>
+            <div class="ficha-form-section-body ficha-antecedentes-grid">
+              <div class="ficha-form-box"><label class="ficha-form-label">Antecedentes psicológicos</label>
+                <textarea name="antecedentes_psicologicos" rows="3"></textarea></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Diagnóstico psiquiátrico</label>
+                <textarea name="diagnostico_psiquiatrico" rows="3"></textarea></div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 mt-2">
             <button type="button" class="cerrar-modal btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Cancelar</button>
             <button type="submit" id="btnGuardarEstudiante" class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Guardar</button>
           </div>
@@ -506,39 +877,108 @@
     </div>
   </div>
 
-  <!-- ============ MODAL: VER DATOS COMPLETOS DEL ESTUDIANTE ============ -->
-  <div id="modalVerDatos" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-40 no-print">
-    <div class="card modal-panel rounded-[22px] w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="font-display text-xl font-bold tracking-tight">Ficha completa del estudiante</h3>
-        <button class="cerrar-modal text-[var(--ink-muted)] hover:text-[var(--ink)] text-xl leading-none">&times;</button>
+  <!-- ============ MODAL: FICHA INTEGRAL DEL ESTUDIANTE ============ -->
+  <div id="modalVerDatos" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-40">
+    <div class="ficha-clinica-shell w-full max-w-4xl max-h-[92vh] overflow-y-auto">
+
+      <!-- Barra de acciones (no se imprime) -->
+      <div class="ficha-clinica-toolbar no-print flex justify-end items-center gap-2 px-5 py-3 sticky top-0 z-10">
+        <button id="btnVdImprimir" class="btn-clinico rounded px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5" title="Imprimir ficha">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir
+        </button>
+        <button id="btnVdPDF" class="btn-clinico-primary rounded px-3.5 py-2 text-xs font-semibold inline-flex items-center gap-1.5" title="Guardar ficha como PDF">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Guardar como PDF
+        </button>
+        <button class="cerrar-modal btn-clinico rounded px-3 py-2 text-xs font-semibold" title="Cerrar">
+          &times;&nbsp;Cerrar
+        </button>
       </div>
 
-      <div class="space-y-6">
-        <div>
-          <h4 class="field-label mb-3" style="color:var(--primary)">Identificación</h4>
-          <div class="doc-ident-grid" id="verDatosIdentificacion"></div>
-        </div>
-        <div>
-          <h4 class="field-label mb-3" style="color:var(--primary)">Contacto</h4>
-          <div class="doc-ident-grid" id="verDatosContacto"></div>
-        </div>
-        <div>
-          <h4 class="field-label mb-3" style="color:var(--primary)">Datos académicos</h4>
-          <div class="doc-ident-grid" id="verDatosAcademicos"></div>
-        </div>
-        <div>
-          <h4 class="field-label mb-3" style="color:var(--primary)">Vivienda y convivencia</h4>
-          <div class="doc-ident-grid" id="verDatosVivienda"></div>
-        </div>
-        <div>
-          <h4 class="field-label mb-3" style="color:var(--primary)">Seguimiento clínico</h4>
-          <div class="doc-ident-grid" id="verDatosEstado"></div>
-        </div>
-      </div>
+      <!-- Contenido imprimible / exportable -->
+      <div id="vdPrintArea">
 
-      <div class="flex justify-end mt-6">
-        <button class="cerrar-modal btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Cerrar</button>
+        <!-- Cabecera institucional -->
+        <div class="ficha-header-bar">
+          <div class="ficha-header-left">
+            <div class="ficha-header-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M9 16h4M9 8h6"/><path d="M19 4H5a2 2 0 0 0-2 2v13a1 1 0 0 0 1.6.8L8 17h11a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/></svg>
+            </div>
+            <div class="ficha-header-titlewrap">
+              <span class="ficha-header-title">Ficha Integral del Estudiante</span>
+              <span class="ficha-header-sub">Área de Psicología · Servicio de Bienestar Estudiantil</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ficha-secciones px-6 sm:px-9">
+
+          <!-- 1. Datos de identificación -->
+          <div class="ficha-seccion">
+            <h4 class="ficha-seccion-title"><span>1. Datos de identificación</span></h4>
+            <div class="ficha-field-grid" id="verDatosIdentificacion"></div>
+          </div>
+
+          <!-- 2. Información de contacto -->
+          <div class="ficha-seccion">
+            <h4 class="ficha-seccion-title"><span>2. Información de contacto</span></h4>
+            <div class="ficha-field-grid" id="verDatosContacto"></div>
+          </div>
+
+          <!-- 3. Datos académicos -->
+          <div class="ficha-seccion">
+            <h4 class="ficha-seccion-title"><span>3. Datos académicos</span></h4>
+            <div class="ficha-field-grid" id="verDatosAcademicos"></div>
+          </div>
+
+          <!-- 4. Composición familiar -->
+          <div class="ficha-seccion">
+            <h4 class="ficha-seccion-title"><span>4. Composición familiar</span></h4>
+            <table class="ficha-clinica-table">
+              <thead>
+                <tr>
+                  <th>Apellidos y nombres</th>
+                  <th>Parentesco</th>
+                  <th>Edad</th>
+                  <th>Ocupación</th>
+                  <th>Situación / condición</th>
+                </tr>
+              </thead>
+              <tbody id="verDatosFamilia"></tbody>
+            </table>
+          </div>
+
+          <!-- 5. Datos socioeconómicos y vivienda -->
+          <div class="ficha-seccion">
+            <h4 class="ficha-seccion-title"><span>5. Datos socioeconómicos y vivienda</span></h4>
+            <div class="ficha-field-grid" id="verDatosVivienda"></div>
+          </div>
+
+          <!-- 6. Datos sociolaborales -->
+          <div class="ficha-seccion">
+            <h4 class="ficha-seccion-title"><span>6. Datos sociolaborales / Estado laboral actual</span></h4>
+            <div class="ficha-field-grid" id="verDatosLaboral"></div>
+          </div>
+
+          <!-- 7. Antecedentes de salud y clínicos -->
+          <div class="ficha-seccion">
+            <h4 class="ficha-seccion-title"><span>7. Antecedentes de salud y clínicos</span></h4>
+            <div class="ficha-antecedentes-grid">
+              <div class="ficha-antecedente-box">
+                <div class="ficha-antecedente-box-header">Antecedentes psicológicos</div>
+                <div class="ficha-antecedente-box-body" id="verDatosAntPsicologicos">—</div>
+              </div>
+              <div class="ficha-antecedente-box">
+                <div class="ficha-antecedente-box-header">Diagnóstico psiquiátrico</div>
+                <div class="ficha-antecedente-box-body" id="verDatosDiagPsiquiatrico">—</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <p class="ficha-clinica-footnote px-6 sm:px-9">Documento de uso interno y confidencial · Generado el <span id="vdFechaGeneracion"></span></p>
       </div>
     </div>
   </div>
@@ -598,16 +1038,47 @@
   let estudianteActivo = null;
 
   // ---------- Utilidades ----------
+  // Parseo de fechas "YYYY-MM-DD" en horario LOCAL (sin pasar por UTC),
+  // que es la misma representación que usa <input type="date">. Esto evita
+  // el desfase de un día que ocurría al usar `new Date(fechaStr)`, ya que
+  // ese constructor interpreta cadenas "solo fecha" como medianoche UTC y,
+  // al convertirlas a la hora local (p. ej. UTC-5 en Perú), retrocede al
+  // día anterior. calcularEdad() y fmtFecha() ahora comparten esta misma
+  // función, de modo que "Ver datos" y "Editar" siempre muestran la fecha
+  // idéntica y sincronizada.
+  function parseFechaLocal(fechaStr){
+    if (!fechaStr) return null;
+    const partes = String(fechaStr).split('-');
+    if (partes.length !== 3) return null;
+    const [y, m, d] = partes.map(Number);
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d);
+  }
   function calcularEdad(fechaStr){
-    const hoy = new Date(); const nac = new Date(fechaStr + 'T00:00:00');
+    const nac = parseFechaLocal(fechaStr);
+    if (!nac) return null;
+    const hoy = new Date();
     let edad = hoy.getFullYear() - nac.getFullYear();
     const m = hoy.getMonth() - nac.getMonth();
     if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
     return edad;
   }
-  function fmtFecha(f){ if(!f) return '—'; return new Date(f).toLocaleDateString('es-PE', {year:'numeric', month:'long', day:'numeric'}); }
+  function fmtFecha(f){
+    const d = parseFechaLocal(f);
+    if (!d) return '—';
+    return d.toLocaleDateString('es-PE', {year:'numeric', month:'long', day:'numeric'});
+  }
   function abrirModal(id){ $(id).classList.remove('hidden'); }
   function cerrarModales(){ document.querySelectorAll('.fixed.z-40, .fixed.z-50').forEach(m => m.classList.add('hidden')); }
+
+  // Tecla Esc: cierra cualquier modal, ventana flotante o previsualización
+  // que esté abierta en pantalla, sin importar cuál sea.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      cerrarModales();
+      resetFichaEstudianteVisual();
+    }
+  });
   document.querySelectorAll('.cerrar-modal').forEach(b => b.addEventListener('click', () => { cerrarModales(); resetFichaEstudianteVisual(); }));
 
   // ---------- Vistas amplias de redacción (reporte de sesión / informe) ----------
@@ -714,6 +1185,198 @@
   // ============================================================
   $('navEstudiantes').addEventListener('click', () => cambiarSeccionPrincipal('estudiantes'));
   $('navReportesFecha').addEventListener('click', () => cambiarSeccionPrincipal('reportesFecha'));
+  $('btnDatosBecarios').addEventListener('click', abrirVistaPreviaBecarios);
+
+  // ============================================================
+  // VISTA PREVIA — DATOS DE BECARIOS (agrupado por institución)
+  // ============================================================
+  function abrirVistaPreviaBecarios(){
+    if (!estudiantes.length) { alert('No hay estudiantes registrados para mostrar.'); return; }
+
+    const grupos = {};
+    estudiantes.forEach(e => {
+      const inst = e.institucion || 'Sin institución registrada';
+      (grupos[inst] ??= []).push(e);
+    });
+
+    const institucionesOrdenadas = Object.keys(grupos).sort((a, b) => a.localeCompare(b));
+    // Encabezados: TODOS centrados, sin excepción.
+    const thBecarios = ['Apellidos y Nombres', 'DNI', 'Institución', 'Carrera', 'Ciclo', 'Estado académico', 'Celular', 'Correo Electrónico', 'Teléfono de Emergencia']
+      .map(t => `<th class="text-center text-xs uppercase tracking-wide text-[var(--ink-muted)] pb-2 px-2">${t}</th>`)
+      .join('');
+
+    const bloquesHtml = institucionesOrdenadas.map(inst => {
+      const filasHtml = grupos[inst]
+        .slice()
+        .sort((a, b) => `${a.apellidos} ${a.nombres}`.localeCompare(`${b.apellidos} ${b.nombres}`))
+        .map(e => `
+          <tr>
+            <td class="py-2 px-2 text-sm text-left border-t" style="border-color:var(--border)">${e.apellidos}, ${e.nombres}</td>
+            <td class="py-2 px-2 text-sm text-center border-t" style="border-color:var(--border)">${e.dni || '—'}</td>
+            <td class="py-2 px-2 text-sm text-center border-t" style="border-color:var(--border)">${e.institucion || '—'}</td>
+            <td class="py-2 px-2 text-sm text-center border-t" style="border-color:var(--border)">${e.carrera || '—'}</td>
+            <td class="py-2 px-2 text-sm text-center border-t" style="border-color:var(--border)">${e.ciclo || '—'}</td>
+            <td class="py-2 px-2 text-sm text-left border-t" style="border-color:var(--border)">${e.estado_academico || '—'}</td>
+            <td class="py-2 px-2 text-sm text-center border-t" style="border-color:var(--border)">${e.celular || '—'}</td>
+            <td class="py-2 px-2 text-sm text-left border-t" style="border-color:var(--border)">${e.correo || '—'}</td>
+            <td class="py-2 px-2 text-sm text-center border-t" style="border-color:var(--border)">${e.telefono_emergencia || '—'}</td>
+          </tr>`).join('');
+
+      return `
+        <div class="doc-section">
+          <h3 class="doc-section-title">${inst} <span class="text-[var(--ink-muted)] font-semibold">· ${grupos[inst].length} estudiante${grupos[inst].length === 1 ? '' : 's'}</span></h3>
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead><tr>${thBecarios}</tr></thead>
+              <tbody>${filasHtml}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }).join('');
+
+    $('bdPrintArea').innerHTML = `
+      <h2 class="font-display text-xl font-bold tracking-tight mb-1">Datos Generales de Becarios</h2>
+      <p class="text-sm text-[var(--ink-muted)] mb-6">Ordenado por institución · Total de estudiantes: ${estudiantes.length}</p>
+      ${bloquesHtml}
+    `;
+    $('modalDatosBecarios').classList.remove('hidden');
+  }
+
+  $('bdBtnCerrarPreview').addEventListener('click', () => $('modalDatosBecarios').classList.add('hidden'));
+
+  // "Imprimir": diálogo nativo del navegador, en orientación horizontal
+  // (landscape) aplicada solo a este reporte mediante una hoja de estilo
+  // temporal que se retira apenas se cierra el diálogo de impresión.
+  $('bdBtnImprimir').addEventListener('click', () => {
+    const estiloLandscape = document.createElement('style');
+    estiloLandscape.id = 'estiloImpresionBecarios';
+    estiloLandscape.textContent = '@page { size: landscape; margin: 12mm; }';
+    document.head.appendChild(estiloLandscape);
+    document.body.classList.add('imprimiendo-becarios');
+
+    const limpiarEstilo = () => {
+      estiloLandscape.remove();
+      document.body.classList.remove('imprimiendo-becarios');
+      window.removeEventListener('afterprint', limpiarEstilo);
+    };
+    window.addEventListener('afterprint', limpiarEstilo);
+
+    window.print();
+    setTimeout(limpiarEstilo, 1000);
+  });
+
+  // "Guardar como PDF": genera el PDF directamente con jsPDF + autoTable a
+  // partir de los datos (no es una "foto" del HTML como en la Ficha
+  // Integral). Así el ancho de cada columna queda definido de antemano y
+  // SIEMPRE cabe dentro de la hoja horizontal, sin recortes ni texto
+  // superpuesto. Ver generarPDFBecariosVectorial() más abajo.
+  $('bdBtnPDF').addEventListener('click', async () => {
+    const btn = $('bdBtnPDF');
+    const textoOriginal = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = 'Generando PDF…';
+    try {
+      generarPDFBecariosVectorial('Datos_Generales_de_Becarios.pdf');
+    } catch (err) {
+      alert('No se pudo generar el PDF: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = textoOriginal;
+    }
+  });
+
+  // ------------------------------------------------------------------------
+  // Datos Generales de Becarios — PDF vectorial (jsPDF + autoTable)
+  // ------------------------------------------------------------------------
+  // A diferencia de la Ficha Integral (que exporta "fotografiando" el HTML
+  // con html2canvas), esta tabla tiene 9 columnas y necesitaba entrar
+  // completa en una hoja horizontal. Fotografiar el HTML resultó frágil
+  // (columnas recortadas, texto superpuesto entre filas), así que este
+  // reporte se arma directo en el PDF a partir de los datos, con un ancho
+  // de columna fijo para cada campo que ya suma, en total, menos que el
+  // ancho útil de una hoja A4 horizontal — por diseño, nunca se puede
+  // desbordar ni recortar.
+  function generarPDFBecariosVectorial(filename){
+    if (!estudiantes.length) { alert('No hay estudiantes registrados para mostrar.'); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const margenLateral = 8;
+
+    const grupos = {};
+    estudiantes.forEach(e => {
+      const inst = e.institucion || 'Sin institución registrada';
+      (grupos[inst] ??= []).push(e);
+    });
+    const institucionesOrdenadas = Object.keys(grupos).sort((a, b) => a.localeCompare(b));
+
+    const columnas = ['Apellidos y Nombres', 'DNI', 'Institución', 'Carrera', 'Ciclo', 'Estado académico', 'Celular', 'Correo Electrónico', 'Teléfono de Emergencia'];
+    // Anchos en mm — suman 272mm, dentro de los 281mm útiles de una hoja
+    // A4 horizontal (297mm - 8mm de margen a cada lado).
+    const anchosColumna = [40, 18, 32, 32, 14, 28, 22, 50, 26];
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(20, 20, 20);
+    doc.text('Datos Generales de Becarios', margenLateral, 14);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Ordenado por institución · Total de estudiantes: ${estudiantes.length}`, margenLateral, 20);
+
+    let y = 27;
+    institucionesOrdenadas.forEach(inst => {
+      const filas = grupos[inst]
+        .slice()
+        .sort((a, b) => `${a.apellidos} ${a.nombres}`.localeCompare(`${b.apellidos} ${b.nombres}`))
+        .map(e => [
+          `${e.apellidos}, ${e.nombres}`,
+          e.dni || '—',
+          e.institucion || '—',
+          e.carrera || '—',
+          e.ciclo || '—',
+          e.estado_academico || '—',
+          e.celular || '—',
+          e.correo || '—',
+          e.telefono_emergencia || '—',
+        ]);
+
+      // Si el título de la institución no entra antes del pie de página,
+      // se pasa a una hoja nueva junto con su tabla.
+      if (y > 180) { doc.addPage(); y = 16; }
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(27, 58, 87);
+      doc.text(`${inst} · ${grupos[inst].length} estudiante${grupos[inst].length === 1 ? '' : 's'}`, margenLateral, y);
+
+      doc.autoTable({
+        startY: y + 3,
+        margin: { left: margenLateral, right: margenLateral },
+        head: [columnas],
+        body: filas,
+        styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 1.6, overflow: 'linebreak', valign: 'middle', lineColor: [214, 219, 213], lineWidth: 0.1 },
+        headStyles: { fillColor: [27, 58, 87], textColor: 255, fontStyle: 'bold', halign: 'center', fontSize: 7 },
+        bodyStyles: { textColor: 35 },
+        alternateRowStyles: { fillColor: [246, 247, 245] },
+        columnStyles: {
+          0: { cellWidth: anchosColumna[0], halign: 'left' },
+          1: { cellWidth: anchosColumna[1], halign: 'center' },
+          2: { cellWidth: anchosColumna[2], halign: 'center' },
+          3: { cellWidth: anchosColumna[3], halign: 'center' },
+          4: { cellWidth: anchosColumna[4], halign: 'center' },
+          5: { cellWidth: anchosColumna[5], halign: 'left' },
+          6: { cellWidth: anchosColumna[6], halign: 'center' },
+          7: { cellWidth: anchosColumna[7], halign: 'left' },
+          8: { cellWidth: anchosColumna[8], halign: 'center' },
+        },
+      });
+
+      y = doc.lastAutoTable.finalY + 12;
+    });
+
+    doc.save(filename);
+  }
 
   function cambiarSeccionPrincipal(seccion){
     const esEstudiantes = seccion === 'estudiantes';
@@ -757,6 +1420,26 @@
     'En observación': 'EO',
     'Requiere atención regular': 'RS',
   };
+
+  // Estado académico del becario (matrícula / avance del ciclo)
+  const ESTADOS_ACADEMICOS_INFO = {
+    'Matriculado':          'background:var(--success-soft); color:var(--success);',
+    'Cursando el ciclo':    'background:var(--primary-soft); color:var(--primary);',
+    'Matrícula pendiente':  'background:#FCF3DA; color:#8A6212;',
+    'Deserción académica':  'background:var(--danger-soft); color:var(--danger);',
+  };
+  function estadoAcademicoEstilo(valor){
+    return (ESTADOS_ACADEMICOS_INFO[valor] || 'background:var(--surface-alt); color:var(--ink-muted);') + ' border:none; cursor:pointer;';
+  }
+  // Select inline: permite editar el estado académico directamente
+  // desde la tabla principal, sin abrir el formulario de edición.
+  function estadoAcademicoSelectHTML(valor){
+    const actual = ESTADOS_ACADEMICOS_INFO[valor] ? valor : 'Matriculado';
+    const opciones = Object.keys(ESTADOS_ACADEMICOS_INFO)
+      .map(op => `<option value="${op}" ${op === actual ? 'selected' : ''}>${op}</option>`)
+      .join('');
+    return `<select class="estado-academico-select badge" style="${estadoAcademicoEstilo(actual)}">${opciones}</select>`;
+  }
   function normalizarEstado(valor){
     if (!valor) return 'EST';
     if (ESTADOS_INFO[valor]) return valor;
@@ -788,14 +1471,15 @@
     filtrados.forEach(e => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="px-5 py-3">
-          <button class="font-semibold text-[var(--primary)] hover:underline abrir-perfil">${e.apellidos}, ${e.nombres}</button>
+        <td class="px-5 py-3 text-left">
+          <button class="font-semibold text-[var(--primary)] hover:underline abrir-perfil text-left">${e.apellidos}, ${e.nombres}</button>
         </td>
-        <td class="px-5 py-3 font-mono text-xs">${e.dni}</td>
-        <td class="px-5 py-3">${e.institucion}</td>
-        <td class="px-5 py-3">${e.carrera || '—'}</td>
-        <td class="px-5 py-3">${e.ciclo || '—'}</td>
-        <td class="px-5 py-3">${estadoBadgeHTML(e.estado_actual)}</td>
+        <td class="px-5 py-3 font-mono text-xs text-left">${e.dni}</td>
+        <td class="px-5 py-3 text-center">${e.institucion}</td>
+        <td class="px-5 py-3 text-left">${e.carrera || '—'}</td>
+        <td class="px-5 py-3 text-left">${e.ciclo || '—'}</td>
+        <td class="px-5 py-3 text-left">${estadoAcademicoSelectHTML(e.estado_academico)}</td>
+        <td class="px-5 py-3 text-left">${estadoBadgeHTML(e.estado_actual)}</td>
         <td class="px-5 py-3 text-right space-x-2 whitespace-nowrap">
           <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-ver-datos inline-flex items-center gap-1.5">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -808,6 +1492,28 @@
       tr.querySelector('.btn-ver-datos').addEventListener('click', () => abrirVerDatos(e));
       tr.querySelector('.btn-editar').addEventListener('click', () => abrirModalEditar(e));
       tr.querySelector('.btn-eliminar').addEventListener('click', () => eliminarEstudiante(e));
+
+      // Edición directa del estado académico: guarda de inmediato en Supabase
+      const selectEstadoAcademico = tr.querySelector('.estado-academico-select');
+      selectEstadoAcademico.addEventListener('click', (ev) => ev.stopPropagation());
+      selectEstadoAcademico.addEventListener('change', async (ev) => {
+        const valorAnterior = ESTADOS_ACADEMICOS_INFO[e.estado_academico] ? e.estado_academico : 'Matriculado';
+        const nuevoValor = ev.target.value;
+        ev.target.disabled = true;
+        const { error } = await supabaseClient
+          .from('estudiantes')
+          .update({ estado_academico: nuevoValor })
+          .eq('dni', e.dni);
+        ev.target.disabled = false;
+        if (error) {
+          alert('No se pudo actualizar el estado académico: ' + error.message);
+          ev.target.value = valorAnterior;
+          return;
+        }
+        e.estado_academico = nuevoValor;
+        ev.target.style.cssText = estadoAcademicoEstilo(nuevoValor);
+      });
+
       tbody.appendChild(tr);
     });
   }
@@ -875,6 +1581,84 @@
     campoConvivenciaDetalle.required = conAlguien;
   }
 
+  // ---------- Campo dinámico: estado laboral actual ----------
+  const campoTrabajaActualmente = $('campoTrabajaActualmente');
+  const campoGrupoLugarTrabajo = $('campoGrupoLugarTrabajo');
+  const campoLugarTrabajo = $('campoLugarTrabajo');
+  const campoGrupoOcupacionActual = $('campoGrupoOcupacionActual');
+  const campoOcupacionActual = $('campoOcupacionActual');
+  const campoGrupoHorarioTrabajo = $('campoGrupoHorarioTrabajo');
+  const campoHorarioTrabajo = $('campoHorarioTrabajo');
+
+  function sincronizarCampoLaboralVisual(){
+    const trabaja = campoTrabajaActualmente.value === 'Sí';
+    [campoGrupoLugarTrabajo, campoGrupoOcupacionActual, campoGrupoHorarioTrabajo].forEach(grp => grp.classList.toggle('hidden', !trabaja));
+    campoLugarTrabajo.required = trabaja;
+    campoOcupacionActual.required = trabaja;
+    campoHorarioTrabajo.required = trabaja;
+  }
+  campoTrabajaActualmente.addEventListener('change', () => {
+    sincronizarCampoLaboralVisual();
+    if (campoTrabajaActualmente.value !== 'Sí') {
+      campoLugarTrabajo.value = '';
+      campoOcupacionActual.value = '';
+      campoHorarioTrabajo.value = '';
+    }
+  });
+
+  // ---------- Cuadro dinámico: composición familiar ----------
+  const PARENTESCOS = ['Padre','Madre','Hermano/a','Tutor/a','Abuelo/a','Tío/a','Primo/a','Otro'];
+  const SITUACIONES_FAMILIA = ['Vive con el estudiante','No vive con él','Fallecido'];
+  function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+
+  function crearFilaFamiliar(datos = {}){
+    const tr = document.createElement('tr');
+    tr.style.borderTop = '1px solid var(--border)';
+    tr.innerHTML = `
+      <td class="p-1.5"><input class="fam-nombre w-full rounded-lg px-2 py-1.5 text-sm" value="${datos.nombre ? escapeAttr(datos.nombre) : ''}" placeholder="Apellidos y nombres"></td>
+      <td class="p-1.5">
+        <select class="fam-parentesco w-full rounded-lg px-2 py-1.5 text-sm">
+          <option value="" ${!datos.parentesco ? 'selected' : ''} disabled>Selecciona</option>
+          ${PARENTESCOS.map(op => `<option ${datos.parentesco === op ? 'selected' : ''}>${op}</option>`).join('')}
+        </select>
+      </td>
+      <td class="p-1.5"><input type="number" min="0" class="fam-edad w-full rounded-lg px-2 py-1.5 text-sm" value="${datos.edad !== undefined && datos.edad !== null ? datos.edad : ''}"></td>
+      <td class="p-1.5"><input class="fam-ocupacion w-full rounded-lg px-2 py-1.5 text-sm" value="${datos.ocupacion ? escapeAttr(datos.ocupacion) : ''}"></td>
+      <td class="p-1.5">
+        <select class="fam-situacion w-full rounded-lg px-2 py-1.5 text-sm">
+          <option value="" ${!datos.situacion ? 'selected' : ''} disabled>Selecciona</option>
+          ${SITUACIONES_FAMILIA.map(op => `<option ${datos.situacion === op ? 'selected' : ''}>${op}</option>`).join('')}
+        </select>
+      </td>
+      <td class="p-1.5 text-center">
+        <button type="button" class="btn-eliminar-familiar text-[var(--ink-muted)] hover:text-red-600 text-lg leading-none" title="Eliminar integrante">&times;</button>
+      </td>`;
+    tr.querySelector('.btn-eliminar-familiar').addEventListener('click', () => tr.remove());
+    return tr;
+  }
+
+  $('btnAgregarFamiliar').addEventListener('click', () => {
+    $('filasComposicionFamiliar').appendChild(crearFilaFamiliar());
+  });
+
+  function cargarComposicionFamiliar(lista){
+    const tbody = $('filasComposicionFamiliar');
+    tbody.innerHTML = '';
+    const arr = Array.isArray(lista) ? lista : [];
+    if (arr.length === 0) { tbody.appendChild(crearFilaFamiliar()); return; }
+    arr.forEach(m => tbody.appendChild(crearFilaFamiliar(m)));
+  }
+
+  function leerComposicionFamiliar(){
+    return Array.from($('filasComposicionFamiliar').querySelectorAll('tr')).map(tr => ({
+      nombre: tr.querySelector('.fam-nombre').value.trim(),
+      parentesco: tr.querySelector('.fam-parentesco').value,
+      edad: tr.querySelector('.fam-edad').value !== '' ? Number(tr.querySelector('.fam-edad').value) : null,
+      ocupacion: tr.querySelector('.fam-ocupacion').value.trim(),
+      situacion: tr.querySelector('.fam-situacion').value,
+    })).filter(m => m.nombre || m.parentesco || m.ocupacion || m.situacion || m.edad !== null);
+  }
+
   // ---------- Alta / edición ----------
   function resetFichaEstudianteVisual(){
     $('fichaEstudianteExito').classList.add('hidden');
@@ -888,6 +1672,8 @@
     $('formEstudiante').reset();
     $('campoDni').disabled = false;
     sincronizarCamposViviendaVisual();
+    sincronizarCampoLaboralVisual();
+    cargarComposicionFamiliar([]);
     abrirModal('modalEstudiante');
   });
 
@@ -897,14 +1683,18 @@
     const f = $('formEstudiante');
     f.reset();
     Object.entries(e).forEach(([k, v]) => { if (f[k]) f[k].value = v ?? ''; });
+    f.estado_academico.value = e.estado_academico || 'Matriculado';
     $('campoDni').disabled = true; // el DNI es la clave, no editable
     sincronizarCamposViviendaVisual();
+    sincronizarCampoLaboralVisual();
+    cargarComposicionFamiliar(e.composicion_familiar);
     abrirModal('modalEstudiante');
   }
 
   $('formEstudiante').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const f = ev.target;
+    const trabaja = f.trabaja_actualmente.value === 'Sí';
     const payload = {
       dni: f.dni.value.trim(),
       apellidos: f.apellidos.value.trim(),
@@ -912,9 +1702,11 @@
       fecha_nacimiento: f.fecha_nacimiento.value,
       celular: f.celular.value.trim(),
       correo: f.correo.value.trim(),
+      direccion_actual: f.direccion_actual.value.trim(),
       institucion: f.institucion.value,
       carrera: f.carrera.value.trim(),
       ciclo: f.ciclo.value.trim(),
+      estado_academico: f.estado_academico.value || 'Matriculado',
       telefono_emergencia: f.telefono_emergencia.value.trim(),
       modalidad_vivienda: f.modalidad_vivienda.value,
       monto_alquiler: f.modalidad_vivienda.value === 'Casa o cuarto alquilado' && f.monto_alquiler.value !== ''
@@ -926,6 +1718,13 @@
         ? Number(f.monto_alquiler_familiar.value) : null,
       convivencia: f.convivencia.value,
       convivencia_detalle: f.convivencia.value === 'Con alguien' ? f.convivencia_detalle.value.trim() : null,
+      composicion_familiar: leerComposicionFamiliar(),
+      trabaja_actualmente: f.trabaja_actualmente.value,
+      lugar_trabajo: trabaja ? f.lugar_trabajo.value.trim() : null,
+      ocupacion_actual: trabaja ? f.ocupacion_actual.value.trim() : null,
+      horario_trabajo: trabaja ? f.horario_trabajo.value.trim() : null,
+      antecedentes_psicologicos: f.antecedentes_psicologicos.value.trim(),
+      diagnostico_psiquiatrico: f.diagnostico_psiquiatrico.value.trim(),
     };
 
     const btn = $('btnGuardarEstudiante');
@@ -967,59 +1766,89 @@
   // PERFIL DE ESTUDIANTE
   // ============================================================
   // ---------- Modal: Ver datos completos del estudiante ----------
-  function identItem(label, valor){
-    return `<div class="doc-ident-item">
-      <span class="doc-ident-label">${label}</span>
-      <span class="doc-ident-value">${valor && String(valor).trim() ? valor : '—'}</span>
+  function fichaCampo(label, valor, destacado, full){
+    return `<div class="ficha-field-box${destacado ? ' destacado' : ''}${full ? ' full' : ''}">
+      <span class="ficha-field-label">${label}</span>
+      <span class="ficha-field-value">${valor !== null && valor !== undefined && String(valor).trim() ? valor : '—'}</span>
     </div>`;
   }
 
   function abrirVerDatos(e){
     const edad = calcularEdad(e.fecha_nacimiento);
 
+    // 1. Datos de identificación — orden estricto: Apellidos | Nombres | DNI | Fecha de nacimiento | Edad
     $('verDatosIdentificacion').innerHTML = [
-      identItem('DNI', e.dni),
-      identItem('Apellidos', e.apellidos),
-      identItem('Nombres', e.nombres),
-      identItem('Fecha de nacimiento', fmtFecha(e.fecha_nacimiento)),
-      identItem('Edad', edad != null ? `${edad} años` : '—'),
+      fichaCampo('Apellidos', e.apellidos),
+      fichaCampo('Nombres', e.nombres),
+      fichaCampo('DNI', e.dni, true),
+      fichaCampo('Fecha de nacimiento', fmtFecha(e.fecha_nacimiento)),
+      fichaCampo('Edad', edad != null ? `${edad} años` : '—'),
     ].join('');
 
+    // 2. Información de contacto — orden estricto: Correo | Teléfono | Dirección (1 línea) | Tel. emergencia
     $('verDatosContacto').innerHTML = [
-      identItem('Celular', e.celular),
-      identItem('Correo electrónico', e.correo),
-      identItem('Teléfono de emergencia', e.telefono_emergencia),
+      fichaCampo('Correo Electrónico', e.correo, false, true),
+      fichaCampo('Teléfono', e.celular),
+      fichaCampo('Dirección Actual', e.direccion_actual, false, true),
+      fichaCampo('Teléfono de Emergencia', e.telefono_emergencia),
     ].join('');
 
+    // 3. Datos académicos
     $('verDatosAcademicos').innerHTML = [
-      identItem('Institución', e.institucion),
-      identItem('Carrera', e.carrera),
-      identItem('Ciclo', e.ciclo),
+      fichaCampo('Facultad / Escuela profesional', e.carrera),
+      fichaCampo('Ciclo actual', e.ciclo),
+      fichaCampo('Situación académica', e.estado_academico || 'Matriculado'),
     ].join('');
 
+    // 4. Composición familiar (tabla formal)
+    const familia = Array.isArray(e.composicion_familiar) ? e.composicion_familiar : [];
+    $('verDatosFamilia').innerHTML = familia.length
+      ? familia.map(m => `<tr>
+          <td>${m.nombre && String(m.nombre).trim() ? m.nombre : '—'}</td>
+          <td>${m.parentesco && String(m.parentesco).trim() ? m.parentesco : '—'}</td>
+          <td>${m.edad !== null && m.edad !== undefined && String(m.edad).trim() !== '' ? m.edad : '—'}</td>
+          <td>${m.ocupacion && String(m.ocupacion).trim() ? m.ocupacion : '—'}</td>
+          <td>${m.situacion && String(m.situacion).trim() ? m.situacion : '—'}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="5" class="ficha-clinica-table-empty">Sin miembros de familia registrados</td></tr>`;
+
+    // 5. Datos socioeconómicos y vivienda
     const esAlquilado = e.modalidad_vivienda === 'Casa o cuarto alquilado';
     const esFamiliar = e.modalidad_vivienda === 'Vivienda de algún familiar';
     const conAlguien = e.convivencia === 'Con alguien';
     const viviendaItems = [
-      identItem('Modalidad de alojamiento', e.modalidad_vivienda),
+      fichaCampo('Modalidad de alojamiento', e.modalidad_vivienda),
     ];
     if (esAlquilado) {
-      viviendaItems.push(identItem('Monto mensual de alquiler', e.monto_alquiler != null ? `S/ ${Number(e.monto_alquiler).toFixed(2)}` : '—'));
+      viviendaItems.push(fichaCampo('Monto mensual de alquiler', e.monto_alquiler != null ? `S/ ${Number(e.monto_alquiler).toFixed(2)}` : '—'));
     }
     if (esFamiliar) {
-      viviendaItems.push(identItem('¿Paga algún alquiler?', e.paga_alquiler_familiar || '—'));
+      viviendaItems.push(fichaCampo('¿Paga algún alquiler?', e.paga_alquiler_familiar || '—'));
       if (e.paga_alquiler_familiar === 'Sí') {
-        viviendaItems.push(identItem('Monto mensual que paga', e.monto_alquiler_familiar != null ? `S/ ${Number(e.monto_alquiler_familiar).toFixed(2)}` : '—'));
+        viviendaItems.push(fichaCampo('Monto mensual que paga', e.monto_alquiler_familiar != null ? `S/ ${Number(e.monto_alquiler_familiar).toFixed(2)}` : '—'));
       }
     }
-    viviendaItems.push(identItem('¿Vive solo o con alguien?', e.convivencia));
+    viviendaItems.push(fichaCampo('¿Vive solo o con alguien?', e.convivencia));
     if (conAlguien) {
-      viviendaItems.push(identItem('¿Con quién vive?', e.convivencia_detalle));
+      viviendaItems.push(fichaCampo('¿Con quién vive?', e.convivencia_detalle));
     }
     $('verDatosVivienda').innerHTML = viviendaItems.join('');
 
-    const codigoEstado = normalizarEstado(e.estado_actual);
-    $('verDatosEstado').innerHTML = identItem('Estado emocional actual', ESTADOS_INFO[codigoEstado].label);
+    // 6. Datos sociolaborales / estado laboral actual
+    const trabaja = e.trabaja_actualmente === 'Sí';
+    const laboralItems = [ fichaCampo('¿Trabaja actualmente?', e.trabaja_actualmente || '—') ];
+    if (trabaja) {
+      laboralItems.push(fichaCampo('Lugar de trabajo', e.lugar_trabajo));
+      laboralItems.push(fichaCampo('Ocupación', e.ocupacion_actual));
+      laboralItems.push(fichaCampo('Horario', e.horario_trabajo));
+    }
+    $('verDatosLaboral').innerHTML = laboralItems.join('');
+
+    // 7. Antecedentes de salud y clínicos
+    $('verDatosAntPsicologicos').textContent = e.antecedentes_psicologicos && String(e.antecedentes_psicologicos).trim() ? e.antecedentes_psicologicos : '—';
+    $('verDatosDiagPsiquiatrico').textContent = e.diagnostico_psiquiatrico && String(e.diagnostico_psiquiatrico).trim() ? e.diagnostico_psiquiatrico : '—';
+
+    $('vdFechaGeneracion').textContent = new Date().toLocaleDateString('es-PE', {year:'numeric', month:'long', day:'numeric'});
 
     abrirModal('modalVerDatos');
   }
@@ -1027,6 +1856,79 @@
   $('btnVerDatosPerfil').addEventListener('click', () => {
     if (estudianteActivo) abrirVerDatos(estudianteActivo);
   });
+
+  // ---------- Ficha Integral del Estudiante: Imprimir / Guardar como PDF ----------
+  // Ambos botones activan la clase body.imprimiendo-ficha, que "desbloquea" el
+  // layout del modal (ver reglas CSS arriba, fuera de @media print) para que
+  // la estructura sea idéntica en los dos casos y en la pantalla.
+  //
+  // - "Imprimir" sigue usando la vía nativa del navegador (window.print()),
+  //   que sí debe abrir su propio diálogo de impresión estándar.
+  // - "Guardar como PDF" ya NO usa window.print(): genera el archivo con
+  //   html2pdf y lo descarga directamente al equipo, sin ninguna ventana
+  //   flotante de previsualización de por medio.
+  function imprimirFichaIntegral(){
+    document.body.classList.add('imprimiendo-ficha');
+    window.print();
+  }
+  window.addEventListener('afterprint', () => document.body.classList.remove('imprimiendo-ficha'));
+
+  // ---------- Generación de PDF sin parpadeos ----------
+  // Clona el elemento a exportar dentro de un contenedor invisible, colocado
+  // fuera de la pantalla (left:-99999px). Así html2canvas captura una copia
+  // con layout normal (sin recortes de scroll ni posición fija), mientras la
+  // ventana flotante visible en pantalla permanece intacta en todo momento:
+  // no se oculta, no cambia de tamaño ni de posición, no hay parpadeo.
+  async function generarPDFDesdeElemento(origen, filename, jsPDFOpts){
+    const ancho = origen.getBoundingClientRect().width || origen.scrollWidth || 900;
+    const contenedor = document.createElement('div');
+    contenedor.style.position = 'fixed';
+    contenedor.style.top = '0';
+    contenedor.style.left = '-99999px';
+    contenedor.style.width = ancho + 'px';
+    contenedor.style.background = '#ffffff';
+    contenedor.style.fontFamily = "'Inter', Arial, sans-serif";
+    contenedor.appendChild(origen.cloneNode(true));
+    document.body.appendChild(contenedor);
+
+    // Un frame para que el navegador calcule el layout del clon antes de capturarlo.
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    try {
+      await html2pdf().set({
+        margin: 14,
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: Object.assign({ unit: 'mm', format: 'a4', orientation: 'portrait' }, jsPDFOpts || {}),
+        pagebreak: { mode: ['css', 'legacy'] }
+      }).from(contenedor.firstElementChild).save();
+    } finally {
+      contenedor.remove();
+    }
+  }
+
+  async function guardarFichaComoPDF(){
+    const btn = $('btnVdPDF');
+    const textoOriginal = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = 'Generando PDF…';
+
+    const base = estudianteActivo ? `Ficha_${estudianteActivo.apellidos}_${estudianteActivo.nombres}` : 'Ficha_Integral_del_Estudiante';
+    const nombreArchivo = base.trim().replace(/\s+/g, '_') + '.pdf';
+
+    try {
+      await generarPDFDesdeElemento($('vdPrintArea'), nombreArchivo, { orientation: 'portrait' });
+    } catch (err) {
+      alert('No se pudo generar el PDF: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = textoOriginal;
+    }
+  }
+
+  $('btnVdImprimir').addEventListener('click', imprimirFichaIntegral);
+  $('btnVdPDF').addEventListener('click', guardarFichaComoPDF);
 
   async function abrirPerfil(dni){
     const { data, error } = await supabaseClient.from('estudiantes').select('*').eq('dni', dni).single();
