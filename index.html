@@ -92,6 +92,33 @@
   .btn-danger{ color:var(--danger); background:#fff; transition:background .2s var(--ease); }
   .btn-danger:hover{ background:var(--danger-soft); }
   table th{ font-size:.6875rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-muted); font-weight:700; }
+
+  /* Tabla principal de estudiantes: amplitud original (columnas holgadas, sin
+     compresión) con desplazamiento horizontal fluido cuando no caben todas. */
+  #tablaScroll{ overflow-x:auto; overflow-y:hidden; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:#B7C2C9 var(--surface-alt); }
+  #tablaScroll::-webkit-scrollbar{ height:12px; }
+  #tablaScroll::-webkit-scrollbar-track{ background:var(--surface-alt); }
+  #tablaScroll::-webkit-scrollbar-thumb{ background:#B7C2C9; border-radius:999px; border:3px solid var(--surface-alt); }
+  #tablaScroll::-webkit-scrollbar-thumb:hover{ background:#8FA0AA; }
+  #tablaPrincipal{ width:100%; min-width:max-content; border-collapse:collapse; }
+  #tablaPrincipal th{ vertical-align:middle; text-align:center; white-space:nowrap; }
+  #tablaPrincipal td{ vertical-align:middle; text-align:center; white-space:nowrap; }
+  #tablaPrincipal td.celda-izq{ text-align:left; }
+  /* Columna Carrera: el texto salta a dos líneas para mantener la tabla compacta */
+  #tablaPrincipal td.celda-carrera{ white-space:normal; }
+  #tablaPrincipal .carrera-texto{
+    display:block; max-width:250px; margin:0 auto; line-height:1.3;
+    white-space:normal; overflow-wrap:break-word; text-wrap:balance;
+  }
+  /* Desplegables en línea (estado y rendimiento académico): texto y opciones centrados */
+  #tablaPrincipal .estado-academico-select, #tablaPrincipal .rendimiento-select{
+    display:block; margin:0 auto; min-width:150px; max-width:100%; text-align:center; text-align-last:center;
+  }
+  #tablaPrincipal .estado-academico-select option, #tablaPrincipal .rendimiento-select option{
+    text-align:center; direction:ltr; background:#fff; color:var(--ink);
+  }
+  #tablaPrincipal .acciones-wrap{ display:flex; flex-wrap:nowrap; justify-content:center; gap:.5rem; }
+  #tablaPrincipal .obs-chip{ margin:0 auto; }
   tbody tr{ transition:background .15s var(--ease); }
   tbody tr:hover{ background:var(--surface-alt); }
   .subtab{ border-bottom:2px solid transparent; color:var(--ink-muted); font-weight:500; transition:color .2s var(--ease), border-color .2s var(--ease); }
@@ -485,8 +512,31 @@
             </select>
           </div>
           <div>
+            <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Estado académico</label>
+            <select id="filtroEstadoAcademico" class="rounded-xl px-3 py-2 text-sm min-w-[190px]">
+              <option value="">Todos</option>
+              <option>Matriculado</option>
+              <option>Matrícula pendiente</option>
+              <option>Cursando ciclo</option>
+              <option>Curso pendiente / Subsanación</option>
+              <option>Pausa académica</option>
+              <option>Suspendido</option>
+              <option>Egresado</option>
+              <option>Retiro voluntario</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Rendimiento académico</label>
+            <select id="filtroRendimiento" class="rounded-xl px-3 py-2 text-sm min-w-[170px]">
+              <option value="">Todos</option>
+              <option>Tercio Superior</option>
+              <option>Medio Superior</option>
+              <option>Regular</option>
+            </select>
+          </div>
+          <div>
             <label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Buscar</label>
-            <input id="filtroBusqueda" placeholder="Apellidos, nombres o DNI" class="rounded-xl px-3 py-2 text-sm min-w-[220px]">
+            <input id="filtroBusqueda" placeholder="Apellidos, nombres o DNI" class="rounded-xl px-3 py-2 text-sm min-w-[200px]">
           </div>
         </div>
         <button id="btnNuevoEstudiante" class="btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap">
@@ -495,16 +545,17 @@
       </div>
 
       <div class="card rounded-[22px] shadow-sm overflow-hidden">
-        <div class="overflow-x-auto" style="scroll-behavior:smooth; -webkit-overflow-scrolling:touch;">
-        <table class="w-full text-sm">
+        <div id="tablaScroll">
+        <table id="tablaPrincipal" class="w-full text-sm">
           <thead class="bg-[var(--bg)]">
             <tr>
               <th class="text-center px-5 py-3 whitespace-nowrap min-w-[230px]">Apellidos y Nombres</th>
               <th class="text-center px-5 py-3 whitespace-nowrap min-w-[110px]">DNI</th>
               <th class="text-center px-5 py-3 whitespace-nowrap min-w-[130px]">Institución</th>
-              <th class="text-center px-5 py-3 whitespace-nowrap min-w-[190px]">Carrera</th>
+              <th class="text-center px-5 py-3 whitespace-nowrap">Carrera</th>
               <th class="text-center px-5 py-3 whitespace-nowrap min-w-[80px]">Ciclo</th>
-              <th class="text-center px-5 py-3 whitespace-nowrap min-w-[170px]">Estado académico</th>
+              <th class="text-center px-5 py-3 whitespace-nowrap min-w-[200px]">Estado académico</th>
+              <th class="text-center px-5 py-3 whitespace-nowrap min-w-[200px]">Rendimiento académico</th>
               <th class="text-center px-5 py-3 whitespace-nowrap min-w-[100px]">Estado</th>
               <th class="text-center px-5 py-3 whitespace-nowrap min-w-[190px]">Observaciones</th>
               <th class="text-center px-5 py-3 whitespace-nowrap min-w-[250px]">Acciones</th>
@@ -532,6 +583,7 @@
             <div class="flex flex-wrap items-center gap-2 mt-3">
               <span id="perfilBadgeEstado" class="badge" title="Estado de seguimiento"></span>
               <span id="perfilBadgeAcademico" class="badge" title="Estado académico"></span>
+              <span id="perfilBadgeRendimiento" class="badge hidden" title="Rendimiento académico"></span>
             </div>
           </div>
           <button id="btnVerDatosPerfil" class="btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold inline-flex items-center gap-1.5">
@@ -546,6 +598,7 @@
           <div class="perfil-dato"><dt>Institución</dt><dd id="perfilInstitucion"></dd></div>
           <div class="perfil-dato"><dt>Carrera</dt><dd id="perfilCarrera"></dd></div>
           <div class="perfil-dato"><dt>Ciclo</dt><dd id="perfilCiclo"></dd></div>
+          <div class="perfil-dato"><dt>Rendimiento académico</dt><dd id="perfilRendimiento"></dd></div>
         </dl>
       </div>
 
@@ -859,6 +912,13 @@
                   <option>Pausa académica</option>
                   <option>Egresado</option>
                   <option>Retiro voluntario</option>
+                </select></div>
+              <div class="ficha-form-box"><label class="ficha-form-label">Rendimiento académico</label>
+                <select name="rendimiento_academico">
+                  <option value="">Sin registrar</option>
+                  <option>Tercio Superior</option>
+                  <option>Medio Superior</option>
+                  <option>Regular</option>
                 </select></div>
               <div class="ficha-form-box full"><label class="ficha-form-label">Observaciones</label>
                 <textarea name="observaciones" rows="2" maxlength="500" placeholder="Motivo o detalle que complementa el estado del estudiante (opcional)"></textarea></div>
@@ -1602,6 +1662,25 @@
       .join('');
     return `<select class="estado-academico-select badge" style="${estadoAcademicoEstilo(actual)}">${opciones}</select>`;
   }
+  // Rendimiento académico: campo independiente del estado académico
+  const RENDIMIENTO_INFO = {
+    'Tercio Superior': 'background:var(--success-soft); color:var(--success);',
+    'Medio Superior':  'background:var(--primary-soft); color:var(--primary);',
+    'Regular':         'background:#FCF3DA; color:#8A6212;',
+  };
+  const RENDIMIENTO_SIN_DATO = 'background:var(--surface-alt); color:var(--ink-muted);';
+  function rendimientoEstilo(valor){
+    return (RENDIMIENTO_INFO[valor] || RENDIMIENTO_SIN_DATO) + ' border:none; cursor:pointer;';
+  }
+  // Select inline: edita el rendimiento directamente desde la tabla
+  function rendimientoSelectHTML(valor){
+    const actual = RENDIMIENTO_INFO[valor] ? valor : '';
+    const opciones = '<option value="" ' + (actual === '' ? 'selected' : '') + '>—</option>' +
+      Object.keys(RENDIMIENTO_INFO)
+        .map(op => `<option value="${op}" ${op === actual ? 'selected' : ''}>${op}</option>`)
+        .join('');
+    return `<select class="rendimiento-select badge" style="${rendimientoEstilo(actual)}">${opciones}</select>`;
+  }
   function normalizarEstado(valor){
     if (!valor) return 'EST';
     if (ESTADOS_INFO[valor]) return valor;
@@ -1664,6 +1743,12 @@
     const bAcad = $('perfilBadgeAcademico');
     bAcad.style.cssText = ESTADOS_ACADEMICOS_INFO[academico];
     bAcad.textContent = academico;
+
+    const bRend = $('perfilBadgeRendimiento');
+    const rend = RENDIMIENTO_INFO[e.rendimiento_academico] ? e.rendimiento_academico : '';
+    bRend.classList.toggle('hidden', !rend);
+    if (rend) { bRend.style.cssText = RENDIMIENTO_INFO[rend]; bRend.textContent = rend; }
+    $('perfilRendimiento').textContent = rend || '—';
   }
 
   // Pestañas del perfil: conteos y mensajes de "sin registros"
@@ -1739,6 +1824,8 @@
     const inst = $('filtroInstitucion').value;
     const ciclo = $('filtroCiclo').value;
     const estadoF = $('filtroEstado').value;
+    const estadoAcadF = $('filtroEstadoAcademico').value;
+    const rendF = $('filtroRendimiento').value;
     const q = $('filtroBusqueda').value.trim().toLowerCase();
 
     const nuevos = leerNuevos();
@@ -1746,6 +1833,8 @@
       (!inst || e.institucion === inst) &&
       (!ciclo || e.ciclo === ciclo) &&
       (!estadoF || normalizarEstado(e.estado_actual) === estadoF) &&
+      (!estadoAcadF || e.estado_academico === estadoAcadF) &&
+      (!rendF || e.rendimiento_academico === rendF) &&
       (!q || `${e.apellidos} ${e.nombres} ${e.dni}`.toLowerCase().includes(q))
     ).sort((a, b) => compararEstudiantes(a, b, nuevos));
 
@@ -1756,23 +1845,26 @@
     filtrados.forEach(e => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="px-5 py-3 text-left">
+        <td class="px-5 py-3 celda-izq">
           <button class="font-semibold text-[var(--primary)] hover:underline abrir-perfil text-left">${e.apellidos}, ${e.nombres}</button>
         </td>
-        <td class="px-5 py-3 font-mono text-xs text-left">${e.dni}</td>
-        <td class="px-5 py-3 text-center">${e.institucion}</td>
-        <td class="px-5 py-3 text-left">${e.carrera || '—'}</td>
-        <td class="px-5 py-3 text-left">${e.ciclo || '—'}</td>
-        <td class="px-5 py-3 text-left">${estadoAcademicoSelectHTML(e.estado_academico)}</td>
-        <td class="px-5 py-3 text-left">${estadoBadgeHTML(e.estado_actual)}</td>
-        <td class="px-5 py-3 text-left">${observacionCeldaHTML(e.observaciones)}</td>
-        <td class="px-5 py-3 text-right space-x-2 whitespace-nowrap">
-          <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-ver-datos inline-flex items-center gap-1.5">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            Ver datos
-          </button>
-          <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-editar">Editar</button>
-          <button class="btn-danger rounded-lg px-3 py-1.5 text-xs font-semibold btn-eliminar">Eliminar</button>
+        <td class="px-5 py-3 font-mono text-xs">${e.dni}</td>
+        <td class="px-5 py-3">${e.institucion}</td>
+        <td class="px-5 py-3 celda-carrera"><span class="carrera-texto">${(e.carrera || '—').replace(/\s*\/\s*/g, ' / ')}</span></td>
+        <td class="px-5 py-3">${e.ciclo || '—'}</td>
+        <td class="px-5 py-3">${estadoAcademicoSelectHTML(e.estado_academico)}</td>
+        <td class="px-5 py-3">${rendimientoSelectHTML(e.rendimiento_academico)}</td>
+        <td class="px-5 py-3">${estadoBadgeHTML(e.estado_actual)}</td>
+        <td class="px-5 py-3">${observacionCeldaHTML(e.observaciones)}</td>
+        <td class="px-5 py-3">
+          <div class="acciones-wrap">
+            <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-ver-datos inline-flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Ver datos
+            </button>
+            <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-editar">Editar</button>
+            <button class="btn-danger rounded-lg px-3 py-1.5 text-xs font-semibold btn-eliminar">Eliminar</button>
+          </div>
         </td>`;
       tr.querySelector('.abrir-perfil').addEventListener('click', () => abrirPerfil(e.dni));
       tr.querySelector('.btn-ver-datos').addEventListener('click', () => abrirVerDatos(e));
@@ -1810,11 +1902,33 @@
         ev.target.style.cssText = estadoAcademicoEstilo(nuevoValor);
       });
 
+      // Edición directa del rendimiento académico: guarda de inmediato en Supabase
+      const selectRendimiento = tr.querySelector('.rendimiento-select');
+      selectRendimiento.addEventListener('click', (ev) => ev.stopPropagation());
+      selectRendimiento.addEventListener('change', async (ev) => {
+        const valorAnterior = RENDIMIENTO_INFO[e.rendimiento_academico] ? e.rendimiento_academico : '';
+        const nuevoValor = ev.target.value;
+        ev.target.disabled = true;
+        const { error } = await supabaseClient
+          .from('estudiantes')
+          .update({ rendimiento_academico: nuevoValor || null })
+          .eq('dni', e.dni);
+        ev.target.disabled = false;
+        if (error) {
+          alert('No se pudo actualizar el rendimiento académico: ' + error.message +
+            (/rendimiento_academico/i.test(error.message) ? '\n\nEjecuta primero en Supabase: ALTER TABLE estudiantes ADD COLUMN rendimiento_academico text;' : ''));
+          ev.target.value = valorAnterior;
+          return;
+        }
+        e.rendimiento_academico = nuevoValor || null;
+        ev.target.style.cssText = rendimientoEstilo(nuevoValor);
+      });
+
       tbody.appendChild(tr);
     });
   }
 
-  ['filtroInstitucion','filtroCiclo','filtroEstado'].forEach(id => $(id).addEventListener('change', renderTabla));
+  ['filtroInstitucion','filtroCiclo','filtroEstado','filtroEstadoAcademico','filtroRendimiento'].forEach(id => $(id).addEventListener('change', renderTabla));
   $('filtroBusqueda').addEventListener('input', renderTabla);
 
   // ---------- Campos dinámicos: vivienda y convivencia ----------
@@ -1980,6 +2094,7 @@
     f.reset();
     Object.entries(e).forEach(([k, v]) => { if (f[k]) f[k].value = v ?? ''; });
     f.estado_academico.value = e.estado_academico || 'Matriculado';
+    f.rendimiento_academico.value = RENDIMIENTO_INFO[e.rendimiento_academico] ? e.rendimiento_academico : '';
     $('campoDni').disabled = true; // el DNI es la clave, no editable
     sincronizarCamposViviendaVisual();
     sincronizarCampoLaboralVisual();
@@ -2003,6 +2118,7 @@
       carrera: f.carrera.value.trim(),
       ciclo: f.ciclo.value.trim(),
       estado_academico: f.estado_academico.value || 'Matriculado',
+      rendimiento_academico: f.rendimiento_academico.value || null,
       observaciones: f.observaciones.value.trim() || null,
       ...(ESTADOS_BAJA.includes(f.estado_academico.value) ? { estado_actual: '-' } : {}),
       telefono_emergencia: f.telefono_emergencia.value.trim(),
@@ -2098,6 +2214,7 @@
       fichaCampo('Facultad / Escuela profesional', e.carrera),
       fichaCampo('Ciclo actual', e.ciclo),
       fichaCampo('Situación académica', e.estado_academico || 'Matriculado'),
+      fichaCampo('Rendimiento académico', e.rendimiento_academico),
     ].join('');
 
     // 4. Composición familiar (tabla formal)
