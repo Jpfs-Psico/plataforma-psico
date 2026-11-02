@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal Psicoeducativo · Coordinación y Supervisión</title>
+<title>Portal Psicoeducativo · Coordinación</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -572,7 +572,18 @@
   .pdf-reporte .mx-reglas{ grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:6px !important; }
   .pdf-reporte .mx-reglas > div{ font-size:8.5px; padding:5px 7px; }
   .mx-der{ display:flex; flex-direction:column; min-width:0; }
-  .mx-scroll{ max-height:330px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; }
+  .mx-scroll{ max-height:330px; overflow-y:auto; overflow-x:auto; border:1px solid var(--border); border-radius:12px; }
+  /* Tabla ejecutiva compacta: columnas de ancho fijo y homogéneo, padding cómodo y bordes finos */
+  .mx-tabla{ table-layout:fixed; width:100%; min-width:700px; font-size:12.5px; }
+  .mx-tabla thead th{ padding:10px 12px; text-align:left; font-size:11.5px; font-weight:700; letter-spacing:.01em; text-transform:none; color:var(--ink-muted); border-bottom:1px solid var(--border); white-space:nowrap; }
+  .mx-tabla tbody td{ padding:10px 12px; vertical-align:middle; border-bottom:1px solid var(--border); line-height:1.35; }
+  .mx-tabla tbody tr:last-child td{ border-bottom:0; }
+  .mx-tabla tbody tr:nth-child(even) td{ background:rgba(154,168,176,.07); }
+  .mx-tabla .mx-c{ text-align:center; }
+  .mx-tabla .mx-nom{ display:block; font-weight:700; color:var(--ink); }
+  .mx-tabla .mx-sub{ display:block; font-size:11px; color:var(--ink-muted); margin-top:1px; }
+  .mx-tabla .mx-est{ display:flex; align-items:flex-start; gap:6px; font-size:12px; line-height:1.3; color:var(--ink); }
+  .mx-tabla .mx-est > span:first-child{ flex:none; line-height:1.3; }
   .mx-scroll table{ border-collapse:separate; border-spacing:0; }
   .mx-scroll thead th{ position:sticky; top:0; z-index:1; background:var(--surface-alt); }
   .pdf-reporte .mx-grid{ grid-template-columns:minmax(0,2fr) minmax(0,3fr) !important; gap:14px !important; }
@@ -636,54 +647,25 @@
   .adm-aud-wrap thead th{ position:sticky; top:0; z-index:1; background:var(--surface-alt); padding:.6rem .75rem; }
   .adm-pill{ display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .75rem; border-radius:999px; font-size:.75rem; font-weight:700; }
 
-  /* ==========================================================================
-     MODO COORDINACIÓN Y SUPERVISIÓN — consulta / solo lectura administrativa
-     ========================================================================== */
-  .modo-coordinacion .coord-oculto{ display:none !important; }
-  .modo-coordinacion #btnAdmin{ display:none !important; }
-  /* Orden del menú: Dashboard · Estudiantes · Intervención Comunitaria · Firma profesional */
-  .modo-coordinacion .main-nav #btnDashboards{ order:1; }
-  .modo-coordinacion .main-nav #navEstudiantes{ order:2; }
-  .modo-coordinacion .main-nav #navComunidad{ order:3; }
-  .modo-coordinacion .main-nav #btnFirmaProfesional{ order:4; }
-  /* Estudiantes: sin alta, edición ni eliminación */
-  .modo-coordinacion #btnNuevoEstudiante,
-  .modo-coordinacion #tablaPrincipal .btn-editar,
-  .modo-coordinacion #tablaPrincipal .btn-eliminar{ display:none !important; }
-  .modo-coordinacion #tablaPrincipal select:disabled{ opacity:1; cursor:default; }
-  /* Perfil: estado y observación en consulta */
-  .modo-coordinacion #btnGuardarObservacion{ display:none !important; }
-  .modo-coordinacion #perfilEstadoActual:disabled,
-  .modo-coordinacion #perfilObservaciones:disabled{ opacity:1; cursor:default; background:var(--surface-alt); }
-  .modo-coordinacion .coord-aviso .perfil-sub{ font-size:.875rem; letter-spacing:.01em; }
-  /* Reportes e informes: solo visualizar / descargar los PDF cargados */
-  .modo-coordinacion #btnAdjuntarSesion, .modo-coordinacion #btnNuevaSesion,
-  .modo-coordinacion #btnAdjuntarInforme, .modo-coordinacion #btnNuevoInforme,
-  .modo-coordinacion #listaSesiones, .modo-coordinacion #listaInformes,
-  .modo-coordinacion .btn-eliminar-doc{ display:none !important; }
-  /* Dashboard: matriz comunitaria sin altas, ediciones ni eliminaciones */
-  .modo-coordinacion #d3BtnNuevo,
-  .modo-coordinacion #dashPanel3 table thead th.no-print,
-  .modo-coordinacion #d3Matriz td.no-print{ display:none !important; }
-  /* Intervención comunitaria: solo consulta */
-  .modo-coordinacion #comBtnNueva, .modo-coordinacion #comFormCard{ display:none !important; }
-  .modo-coordinacion #seccionComunidad table thead th:last-child,
-  .modo-coordinacion #comTabla td:last-child{ display:none !important; }
+  /* ===== COORDINACIÓN · SOLO LECTURA ===== */
+  #tablaPrincipal select:disabled, #perfilEstadoActual:disabled{ opacity:1; cursor:default; -webkit-text-fill-color:currentColor; }
+  #tablaPrincipal select:disabled{ appearance:none; -webkit-appearance:none; background-image:none; }
+  #perfilObservaciones[readonly], #campoColegiatura[readonly]{ background:var(--surface-alt); cursor:default; resize:none; }
+  #avisoSeguimientoPsico{ border-style:solid; }
 </style>
 </head>
-<body class="min-h-screen modo-coordinacion">
+<body class="min-h-screen">
 
   <div class="tab-strip text-white sticky top-0 z-30 no-print">
     <div class="max-w-7xl mx-auto px-6 sm:px-8 py-5 flex items-center justify-between">
       <div>
         <h1 class="font-display text-2xl font-extrabold">Portal Psicoeducativo</h1>
-        <p class="text-sm text-white/60 font-medium mt-0.5">Portal / Coordinación y Supervisión · Modo consulta</p>
+        <p class="text-sm text-white/60 font-medium mt-0.5">Portal / Coordinación</p>
       </div>
       <nav class="flex gap-1 main-nav">
-        <button id="navEstudiantes" class="nav-item seccion-nav-btn nav-activo">Estudiantes</button>
+        <button id="btnDashboards" class="nav-item nav-activo">Dashboard</button>
+        <button id="navEstudiantes" class="nav-item seccion-nav-btn">Estudiantes</button>
         <button id="navComunidad" class="nav-item seccion-nav-btn">Intervención Comunitaria</button>
-        <button id="btnDashboards" class="nav-item">Dashboard</button>
-        <button id="btnAdmin" class="nav-item">Admin</button>
         <button id="btnFirmaProfesional" class="nav-item flex items-center gap-2">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Firma profesional
@@ -694,7 +676,7 @@
 
   <main class="max-w-7xl mx-auto px-6 sm:px-8 py-10">
 
-  <div id="seccionEstudiantes">
+  <div id="seccionEstudiantes" class="hidden">
     <!-- ============ VISTA: LISTA DE ESTUDIANTES ============ -->
     <section id="vistaLista">
       <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
@@ -752,7 +734,7 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-3 ml-auto">
-          <button id="btnNuevoEstudiante" class="btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap">
+          <button id="btnNuevoEstudiante" class="hidden btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap">
             + Nuevo estudiante
           </button>
           <button id="btnDescargarBD" type="button" class="btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold whitespace-nowrap inline-flex items-center gap-2" title="Descarga un PDF con la base de datos consolidada de becarios">
@@ -851,7 +833,7 @@
 
           <div class="mt-4">
             <label for="perfilEstadoActual" class="perfil-lbl">Estado</label>
-            <select id="perfilEstadoActual" class="w-full rounded-xl px-4 py-2.5 text-sm font-semibold mt-2">
+            <select id="perfilEstadoActual" disabled class="w-full rounded-xl px-4 py-2.5 text-sm font-semibold mt-2">
           <option value="EST">EST (Estable)</option>
           <option value="EPA">EPA (En proceso de adaptación)</option>
           <option value="SP">SP (Seguimiento Psicológico)</option>
@@ -862,19 +844,19 @@
           <div class="mt-4 pt-4 border-t" style="border-color:var(--border)">
             <label for="perfilObservaciones" class="perfil-lbl">Observaciones</label>
             <p class="perfil-sub mt-0.5">Detalle que justifica el estado.</p>
-            <textarea id="perfilObservaciones" rows="3" maxlength="500" class="w-full rounded-xl px-3 py-2 text-sm mt-2" placeholder="Motivo o detalle (opcional)"></textarea>
-            <button id="btnGuardarObservacion" type="button" class="btn-primary w-full rounded-xl px-4 py-2 text-sm font-semibold mt-3">Guardar observación</button>
+            <textarea id="perfilObservaciones" rows="3" maxlength="500" readonly class="w-full rounded-xl px-3 py-2 text-sm mt-2" placeholder="Sin observaciones registradas"></textarea>
+            <button id="btnGuardarObservacion" type="button" class="hidden btn-primary w-full rounded-xl px-4 py-2 text-sm font-semibold mt-3">Guardar observación</button>
           </div>
         </div><!-- /seg-estado -->
 
         <!-- Seguimiento psicológico (alimenta el Dashboard de Acompañamiento Psicológico) · PROTEGIDO CON PIN -->
         <div class="card rounded-[22px] p-5 min-w-0 seg-clinico">
-            <div class="sp-lock coord-aviso">
+            <div class="sp-lock" role="note" id="avisoSeguimientoPsico">
               <span class="sp-lock-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-              <p class="perfil-card-title">Seguimiento psicológico</p>
-              <p class="perfil-sub">Uso exclusivo del área de psicología</p>
+              <p class="perfil-card-title">Sección bloqueada</p>
+              <p class="perfil-sub" style="font-weight:700;color:var(--ink)">Seguimiento psicológico: uso exclusivo del área de psicología</p>
             </div>
-            <div class="hidden" data-coord-oculto>
+            <div class="hidden" aria-hidden="true">
             <div class="flex items-center justify-between gap-2">
               <p class="perfil-card-title">Seguimiento psicológico</p>
               <button type="button" data-sp-bloquear class="btn-ghost rounded-lg px-2.5 py-1 text-xs font-semibold inline-flex items-center gap-1" title="Volver a ocultar el contenido clínico">🔒 Bloquear</button>
@@ -902,7 +884,7 @@
             <label class="flex items-start gap-2 mt-4 text-sm cursor-pointer" for="scPerdidaBeca">
               <input id="scPerdidaBeca" type="checkbox" class="mt-1" style="width:16px;height:16px">
               <span><strong>Riesgo inminente de perder la beca</strong><span class="block perfil-sub" style="margin:0">Marca al becario como 🔴 Riesgo Alto en la Matriz de Alertas Tempranas, sin importar sus cursos desaprobados.</span></span></label>
-            <p class="perfil-sub mt-2">Al registrar un factor, el caso se considera detectado y entra al acumulado del programa. En el Dashboard, el becario se cuenta una sola vez en el grupo de su Factor Principal, en la barra de su Estado del Caso: amarillo (En Atención), azul (Evolución Favorable), verde (Resuelto / Alta) o rojo (Abandono del Soporte Psicológico).</p>
+            <p class="perfil-sub mt-2">Al registrar un factor, el caso se considera detectado y entra al acumulado del programa. En el Dashboard, el becario se cuenta una sola vez en el grupo de su Factor Principal, en la barra de su Estado del Caso: amarillo (En Atención), azul (Evolución Favorable), verde (Resuelto / Alta), rojo (Abandono del Soporte Psicológico) o violeta (Monitoreo general / Seguimiento preventivo). Si el becario está estable, deja los Niveles 1, 2 y 3 vacíos y elige en el Nivel 4 «Monitoreo general / Seguimiento preventivo»: se cuenta en el Dashboard, pero no aparece en el Cuadro de Resumen Mensual.</p>
 
             <button id="btnGuardarSeguimientoClinico" type="button" class="btn-primary w-full rounded-xl px-4 py-2.5 text-sm font-semibold mt-4">Guardar seguimiento</button>
             <p id="scMsg" class="perfil-sub mt-2 hidden"></p>
@@ -911,11 +893,11 @@
 
         <!-- Reportes y documentos (notas, historial evolutivo e informes psicológicos) · PROTEGIDO CON PIN -->
         <div class="card rounded-[22px] p-5 min-w-0 seg-reportes">
-          <div>
+          <div data-coord-reportes>
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p class="perfil-card-title">Reportes e Informes Psicológicos</p>
-              <p class="perfil-sub mt-0.5">Documentos PDF cargados por el área de psicología.</p>
+              <p class="perfil-sub mt-0.5">Consulta y descarga los reportes de sesión e informes psicológicos del estudiante (solo lectura).</p>
             </div>
           </div>
 
@@ -931,11 +913,11 @@
             <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
               <div>
                 <h3 class="font-display text-lg font-bold tracking-tight">Historial de reportes</h3>
-                <p class="perfil-sub mt-0.5">Reportes de sesión cargados en PDF.</p>
+                <p class="perfil-sub mt-0.5">Una nota por cada sesión de atención.</p>
               </div>
               <div class="flex items-center gap-2 flex-wrap justify-end">
-                <button id="btnAdjuntarSesion" type="button" class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold inline-flex items-center gap-1.5" style="border-color:var(--primary); color:var(--primary);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Adjuntar PDF</button>
-                <button id="btnNuevaSesion" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">+ Agregar reporte de sesión</button>
+                <button id="btnAdjuntarSesion" type="button" class="hidden btn-ghost rounded-xl px-4 py-2 text-sm font-semibold inline-flex items-center gap-1.5" style="border-color:var(--primary); color:var(--primary);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Adjuntar PDF</button>
+                <button id="btnNuevaSesion" class="hidden btn-primary rounded-xl px-4 py-2 text-sm font-semibold">+ Agregar reporte de sesión</button>
               </div>
             </div>
             <div id="listaSesiones" class="space-y-6"></div>
@@ -943,7 +925,7 @@
               <p class="text-sm font-semibold mb-3">Documentos adjuntos</p>
               <div id="listaDocsSesiones" class="space-y-3"></div>
             </div>
-            <div id="sesionesVacio" class="hidden empty-state"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><strong>Aún no hay documentos de sesión</strong>No hay PDF cargados para este estudiante.</div>
+            <div id="sesionesVacio" class="hidden empty-state"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><strong>Aún no hay reportes de sesión</strong>El área de psicología aún no ha registrado documentos.</div>
           </div>
 
           <!-- TAB: INFORMES -->
@@ -951,11 +933,11 @@
             <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
               <div>
                 <h3 class="font-display text-lg font-bold tracking-tight">Historial de informes</h3>
-                <p class="perfil-sub mt-0.5">Informes psicológicos cargados en PDF.</p>
+                <p class="perfil-sub mt-0.5">Informes psicológicos formales del estudiante.</p>
               </div>
               <div class="flex items-center gap-2 flex-wrap justify-end">
-                <button id="btnAdjuntarInforme" type="button" class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold inline-flex items-center gap-1.5" style="border-color:var(--primary); color:var(--primary);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Adjuntar PDF</button>
-                <button id="btnNuevoInforme" class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">+ Agregar informe psicológico</button>
+                <button id="btnAdjuntarInforme" type="button" class="hidden btn-ghost rounded-xl px-4 py-2 text-sm font-semibold inline-flex items-center gap-1.5" style="border-color:var(--primary); color:var(--primary);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>Adjuntar PDF</button>
+                <button id="btnNuevoInforme" class="hidden btn-primary rounded-xl px-4 py-2 text-sm font-semibold">+ Agregar informe psicológico</button>
               </div>
             </div>
             <div id="listaInformes" class="space-y-6"></div>
@@ -963,7 +945,7 @@
               <p class="text-sm font-semibold mb-3">Documentos adjuntos</p>
               <div id="listaDocsInformes" class="space-y-3"></div>
             </div>
-            <div id="informesVacio" class="hidden empty-state"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><strong>Aún no hay informes</strong>No hay PDF cargados para este estudiante.</div>
+            <div id="informesVacio" class="hidden empty-state"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><strong>Aún no hay informes psicológicos</strong>El área de psicología aún no ha registrado documentos.</div>
           </div>
           </div><!-- /data-sp-contenido -->
         </div>
@@ -1066,7 +1048,7 @@
     <div class="flex flex-wrap items-end justify-between gap-4 mb-5">
       <div>
         <h2 class="font-display text-2xl font-extrabold tracking-tight">Intervención Comunitaria</h2>
-        <p class="perfil-sub mt-0.5">Historial de acciones de campo registradas por el área de psicología (modo consulta).</p>
+        <p class="perfil-sub mt-0.5">Registro de acciones de campo. Lo guardado aquí alimenta el Dashboard de Trabajo comunitario e institucional.</p>
       </div>
       <button id="comBtnNueva" type="button" class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">+ Nueva Intervención</button>
     </div>
@@ -1134,23 +1116,20 @@
 
   <!-- ============ SECCIÓN: REPORTES POR RANGO DE FECHAS ============ -->
   <!-- ============ SECCIÓN: DASHBOARDS EJECUTIVOS ============ -->
-  <div id="seccionDashboards" class="hidden">
-    <div class="card rounded-[22px] shadow-sm p-5 mb-6 no-print">
-      <div class="flex flex-wrap items-end gap-4">
-        <div class="coord-oculto"><label class="block text-xs font-bold text-[var(--ink-muted)] mb-1.5 uppercase tracking-[.08em]">Institución</label><select id="dfInst" class="rounded-xl px-3 py-2 text-sm min-w-[220px]">
-          <option value="">Todas las Instituciones</option>
-          <option value="SENATI">SENATI</option>
-          <option value="UTP">UTP</option>
-          <option value="USS">USS</option>
-          <option value="Valle Grande">Valle Grande</option>
-          <option value="CETEMIN">CETEMIN</option>
-        </select></div>
-        <button id="dashRefrescar" class="btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Actualizar datos</button>
-      </div>
-      <p id="dashAviso" class="hidden text-sm mt-3 font-semibold" style="color:var(--danger)"></p>
+  <div id="seccionDashboards">
+    <div id="comHeadCoord" class="hidden mb-6">
+      <h2 class="font-display text-2xl font-extrabold tracking-tight">Intervención Comunitaria</h2>
+      <p class="perfil-sub mt-0.5">Matriz Única de Gestión · vista de coordinación (solo lectura), sincronizada en tiempo real con la plataforma principal.</p>
     </div>
+    <!-- Coordinación: sin filtro por institución ni botón "Actualizar datos". Se conservan ocultos (valor "Todas") para que el código de los dashboards siga funcionando igual. -->
+    <div class="hidden" aria-hidden="true">
+      <select id="dfInst" tabindex="-1"><option value="">Todas las Instituciones</option></select>
+      <button id="dashRefrescar" type="button" tabindex="-1"></button>
+    </div>
+    <p id="dashAviso" class="hidden text-sm mb-4 font-semibold" style="color:var(--danger)"></p>
 
-    <div class="dash-seg mb-6 no-print" role="tablist" aria-label="Secciones del Dashboard">
+
+    <div id="dashTabsBar" class="dash-seg mb-6 no-print" role="tablist" aria-label="Secciones del Dashboard">
       <button id="dashTab1" class="dash-tab subtab active text-sm">📊 Gestión Académica y Empleabilidad</button>
       <button id="dashTab2" class="dash-tab subtab text-sm">🧠 Acompañamiento Psicológico</button>
       <button id="dashTab3" class="dash-tab subtab text-sm">🤝 Trabajo Comunitario e Institucional</button>
@@ -1214,7 +1193,7 @@
       <div id="d2Kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
       <div class="card rounded-[18px] px-5 py-4 mb-4 modulo-cabecera" style="border-left:5px solid var(--primary)"><h2 class="modulo-titulo">Evolución y Seguimiento de Alertas</h2></div>
       <div class="card rounded-[18px] p-5 mb-6"><h3 class="perfil-card-title mb-3">Estado y Evolución de Casos de Riesgo</h3>
-        <div style="height:380px;max-width:560px;margin:0 auto"><canvas id="chEvolucion"></canvas></div><p id="d2RadarResumen" class="perfil-sub text-center mt-3"></p><p id="d2RadarVacio" class="perfil-sub text-center mt-2 hidden">Aún no hay casos con Factor de Riesgo Principal registrado con los filtros elegidos.</p></div>
+        <div style="height:380px;max-width:560px;margin:0 auto"><canvas id="chEvolucion"></canvas></div><p id="d2RadarVacio" class="perfil-sub text-center mt-2 hidden">Aún no hay casos con Factor de Riesgo Principal registrado con los filtros elegidos.</p></div>
       <div class="card rounded-[18px] p-5"><h3 class="perfil-card-title mb-3">Registro Descriptivo de Casos en Acompañamiento</h3>
         <div style="overflow-x:auto"><table class="w-full text-sm"><thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
           <th class="px-3 py-2">Becario</th><th class="px-3 py-2">Institución / Carrera</th><th class="px-3 py-2">Factor Principal</th><th class="px-3 py-2">Subfactor</th><th class="px-3 py-2">Estado del Caso</th><th class="px-3 py-2">Detalle / Observaciones</th></tr></thead>
@@ -1229,15 +1208,15 @@
       <div class="card rounded-[18px] px-5 py-4 mb-4 modulo-cabecera" style="border-left:5px solid var(--primary)"><h2 class="modulo-titulo">Trabajo Comunitario e Institucional</h2></div>
       <div class="card rounded-[18px] p-5 mb-6"><h3 class="perfil-card-title mb-3">Consolidado de Intervenciones Comunitarias e Institucionales</h3>
         <div id="d3ChartWrap" style="height:270px"><canvas id="chIntervenciones"></canvas></div>
-        <div id="d3ChartVacio" class="hidden empty-state"><strong>Sin datos</strong>Registra la primera intervención en la pestaña Intervención Comunitaria.</div>
+        <div id="d3ChartVacio" class="hidden empty-state"><strong>Sin datos</strong>Aún no hay intervenciones registradas.</div>
         <p id="d3VisNota" class="hidden no-print text-xs mt-2" style="color:var(--ink-muted)"></p></div>
       <div class="card rounded-[18px] p-5"><div class="flex flex-wrap items-start justify-between gap-3 mb-3">
           <div><h3 class="perfil-card-title">Matriz Única de Gestión de Intervenciones Comunitarias e Institucionales</h3>
-            <p class="perfil-sub mt-0.5">Registra la sede, el tipo de intervención, el tema abordado y las observaciones (detalles, acuerdos o fechas específicas). Vista de consulta para coordinación.</p></div>
-          <button id="d3BtnNuevo" type="button" class="btn-primary no-print rounded-xl px-4 py-2 text-sm font-semibold whitespace-nowrap">+ Agregar registro</button></div>
+            <p class="perfil-sub mt-0.5">Sede, tipo de intervención, tema abordado y observaciones de cada gestión. Vista de solo lectura, sincronizada en tiempo real con la plataforma principal.</p></div>
+          <button id="d3BtnNuevo" type="button" class="hidden btn-primary no-print rounded-xl px-4 py-2 text-sm font-semibold whitespace-nowrap">+ Agregar registro</button></div>
         <p id="d3MatrizAviso" class="hidden no-print text-sm mb-3 font-semibold" style="color:var(--danger)"></p>
         <div style="overflow-x:auto"><table class="w-full text-sm"><thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
-          <th class="px-3 py-2">Institución / Sede</th><th class="px-3 py-2">Tipo de Intervención</th><th class="px-3 py-2">Tema</th><th class="px-3 py-2">Observaciones</th><th class="px-3 py-2 text-center no-print">Acciones</th></tr></thead>
+          <th class="px-3 py-2">Institución / Sede</th><th class="px-3 py-2">Tipo de Intervención</th><th class="px-3 py-2">Tema</th><th class="px-3 py-2">Observaciones</th></tr></thead>
           <tbody id="d3Matriz" class="divide-y" style="border-color:var(--border)"></tbody></table></div>
         <div id="d3Pager" class="no-print hidden flex items-center justify-between gap-3 mt-4">
           <button id="d3Prev" type="button" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold">← Anterior</button>
@@ -1275,124 +1254,15 @@
               <span id="d1MxConteo" class="text-xs" style="color:var(--ink-muted)"></span>
             </div>
             <div class="mx-scroll">
-              <table class="w-full text-sm"><thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
-                <th class="px-3 py-2">Becario</th><th class="px-3 py-2">Carrera / Institución</th><th class="px-3 py-2 text-center">Cursos Desaprobados</th><th class="px-3 py-2">Estado Clínico (Nivel 4)</th><th class="px-3 py-2">Nivel de Riesgo</th><th class="px-3 py-2 text-center no-print">Perfil</th></tr></thead>
-                <tbody id="d1MxTabla" class="divide-y" style="border-color:var(--border)"></tbody></table>
+              <table class="mx-tabla">
+                <colgroup><col style="width:150px"><col style="width:160px"><col style="width:90px"><col style="width:140px"><col style="width:110px"><col class="no-print" style="width:100px"></colgroup>
+                <thead><tr>
+                <th>Becario</th><th>Carrera e Institución</th><th class="mx-c">Cursos desaprobados</th><th>Estado clínico</th><th>Nivel de riesgo</th><th class="mx-c no-print">Perfil</th></tr></thead>
+                <tbody id="d1MxTabla"></tbody></table>
               <div id="d1MxVacio" class="empty-state hidden" style="border:0"></div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ SECCIÓN: ADMIN ============ -->
-  <div id="seccionAdmin" class="hidden">
-    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-      <div>
-        <h2 class="font-display text-2xl font-extrabold tracking-tight">Administración</h2>
-        <p class="perfil-sub mt-0.5">Reportes consolidados, resumen ejecutivo del programa y auditoría de expedientes.</p>
-      </div>
-      <button id="admRefrescar" type="button" class="btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Actualizar datos</button>
-    </div>
-    <p id="admAviso" class="hidden text-sm mb-4 font-semibold" style="color:var(--danger)"></p>
-
-    <!-- A) Generación de reportes -->
-    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-5 mb-6 items-stretch">
-      <div class="adm-hero">
-        <div>
-          <h3>Reporte General Completo</h3>
-          <p>Informe consolidado en PDF con las tres secciones del Dashboard: Gestión Académica y Empleabilidad, Acompañamiento Psicológico y Trabajo Comunitario e Institucional. Respeta el filtro de institución del Dashboard.</p>
-        </div>
-        <button id="admPdfGeneral" type="button" class="adm-hero-btn js-pdf-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-          Generar Reporte General Completo (PDF)
-        </button>
-      </div>
-      <div class="card rounded-[22px] p-5">
-        <h3 class="perfil-card-title">Reportes por sección</h3>
-        <p class="perfil-sub mb-3">Descarga individual en PDF de cada sección del Dashboard.</p>
-        <div class="space-y-2.5">
-          <button id="admPdf1" type="button" class="adm-quick js-pdf-btn"><span class="perfil-icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><span class="adm-txt"><strong>Gestión Académica y Empleabilidad</strong><span>Estado académico, rendimiento y situación laboral</span></span><span class="adm-go">PDF ↓</span></button>
-          <button id="admPdf2" type="button" class="adm-quick js-pdf-btn"><span class="perfil-icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><span class="adm-txt"><strong>Acompañamiento Psicológico</strong><span>Evolución y seguimiento de alertas</span></span><span class="adm-go">PDF ↓</span></button>
-          <button id="admPdf3" type="button" class="adm-quick js-pdf-btn"><span class="perfil-icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><span class="adm-txt"><strong>Trabajo Comunitario e Institucional</strong><span>Intervenciones comunitarias e institucionales</span></span><span class="adm-go">PDF ↓</span></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- B) Resumen ejecutivo -->
-    <div id="admKpis" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"></div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-5 mb-6 items-stretch">
-      <div class="card rounded-[22px] p-5">
-        <h3 class="perfil-card-title mb-1">Estado General del Programa</h3>
-        <p class="perfil-sub mb-4">Distribución consolidada de los becarios según su situación académica.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center">
-          <div style="flex:1 1 220px;min-width:0;height:260px"><canvas id="chAdminEstado"></canvas></div>
-          <div id="admLeyenda" style="flex:0 0 210px;max-width:100%"></div>
-        </div>
-      </div>
-      <div class="card rounded-[22px] p-5">
-        <h3 class="perfil-card-title mb-1">Accesos rápidos</h3>
-        <p class="perfil-sub mb-3">Configuración y atajos generales del sistema.</p>
-        <div id="admAccesos" class="space-y-2.5"></div>
-      </div>
-    </div>
-
-    <!-- C) Matriz de Alertas Preventivas -->
-    <div class="card rounded-[22px] p-5 mb-6" id="admMatriz">
-      <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-        <div>
-          <h3 class="perfil-card-title">Matriz de Alertas Preventivas</h3>
-          <p class="perfil-sub mt-0.5">Evaluación multidimensional: cursos desaprobados cruzados con indicadores clínicos, sociofamiliares y de salud. Alto: 3 o más desaprobados, 2 o más con indicador severo, o riesgo inminente de perder la beca. Medio: 1 desaprobado con vulnerabilidad, o 2 con estabilidad psicoemocional. Los casos de Riesgo Alto aparecen primero.</p>
-        </div>
-        <div id="admMxResumen" class="flex flex-wrap gap-2"></div>
-      </div>
-      <p id="admMxNota" class="hidden perfil-sub mb-3" style="color:var(--danger)"></p>
-      <div class="flex flex-wrap items-center gap-3 mb-3">
-        <div class="adm-seg" id="admMxFiltros" role="tablist" aria-label="Filtrar por nivel de riesgo">
-          <button type="button" data-mx-f="todos" class="active">Todos</button>
-          <button type="button" data-mx-f="rojo">🔴 Alto</button>
-          <button type="button" data-mx-f="amarillo">🟡 Medio</button>
-          <button type="button" data-mx-f="verde">🟢 Bajo</button>
-        </div>
-        <input id="admMxBuscar" placeholder="Buscar becario o DNI" class="rounded-xl px-3 py-2 text-sm min-w-[220px] ml-auto">
-      </div>
-      <div class="adm-aud-wrap" style="max-height:480px">
-        <table class="w-full text-sm">
-          <thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
-            <th>Becario</th><th>Institución</th><th class="text-center">Promedio</th><th class="text-center">Cursos desaprobados</th><th>Alerta psicológica</th><th>Semáforo</th><th class="text-center">Perfil</th></tr></thead>
-          <tbody id="admMxTabla" class="divide-y" style="border-color:var(--border)"></tbody>
-        </table>
-        <p id="admMxVacio" class="hidden text-center text-sm text-[var(--ink-muted)] py-8">No hay becarios para este filtro.</p>
-      </div>
-    </div>
-
-    <div class="card rounded-[22px] p-5">
-      <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-        <div>
-          <h3 class="perfil-card-title">Auditoría de Documentos</h3>
-          <p class="perfil-sub mt-0.5">Estado de los expedientes: quiénes tienen PDF, reportes o informes cargados y quiénes aún tienen pendientes.</p>
-        </div>
-        <div id="admAudResumen" class="flex flex-wrap gap-2"></div>
-      </div>
-      <div class="adm-bar mb-4" role="img" aria-label="Avance de expedientes con documentos"><i id="admAudBarra" style="width:0%"></i></div>
-      <p id="admAudNota" class="hidden perfil-sub mb-3" style="color:var(--danger)"></p>
-      <div class="flex flex-wrap items-center gap-3 mb-3">
-        <div class="adm-seg" id="admAudFiltros" role="tablist" aria-label="Filtrar expedientes">
-          <button type="button" data-adm-f="todos" class="active">Todos</button>
-          <button type="button" data-adm-f="con">Con documentos</button>
-          <button type="button" data-adm-f="pen">Pendientes</button>
-        </div>
-        <input id="admAudBuscar" placeholder="Buscar becario o DNI" class="rounded-xl px-3 py-2 text-sm min-w-[220px] ml-auto">
-      </div>
-      <div class="adm-aud-wrap">
-        <table class="w-full text-sm">
-          <thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
-            <th>Becario</th><th>Institución</th><th class="text-center">PDF adjuntos</th><th class="text-center">Reportes de sesión</th><th class="text-center">Informes</th><th>Estado</th></tr></thead>
-          <tbody id="admAudTabla" class="divide-y" style="border-color:var(--border)"></tbody>
-        </table>
-        <p id="admAudVacio" class="hidden text-center text-sm text-[var(--ink-muted)] py-8">No hay becarios para este filtro.</p>
       </div>
     </div>
   </div>
@@ -1753,7 +1623,7 @@
         <button class="cerrar-modal text-[var(--ink-muted)] hover:text-[var(--ink)] text-xl leading-none">&times;</button>
       </div>
       <p class="text-sm text-[var(--ink-muted)] leading-relaxed mb-6">
-        Datos institucionales del profesional responsable (solo lectura).
+        Firma profesional del área de psicología. Esta sección es de solo lectura: se administra desde la plataforma principal.
       </p>
       <form id="formFirma" class="space-y-4">
         <div>
@@ -1762,10 +1632,10 @@
         </div>
         <div>
           <label class="field-label">Número de colegiatura (CPsP)</label>
-          <input id="campoColegiatura" name="colegiatura" placeholder="—" disabled class="mt-2 w-full rounded-xl px-4 py-3 text-sm opacity-70">
+          <input id="campoColegiatura" name="colegiatura" readonly placeholder="No registrado" class="mt-2 w-full rounded-xl px-4 py-3 text-sm">
         </div>
         <div class="flex justify-end gap-3 pt-2">
-          <button type="button" class="cerrar-modal btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Cerrar</button>
+          <button type="button" class="cerrar-modal btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold">Cerrar</button>
         </div>
       </form>
     </div>
@@ -1835,7 +1705,21 @@
   // ============================================================================
   const SUPABASE_URL = "https://dqmrwwhjjxzedxyomcwg.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxbXJ3d2hqanh6ZWR4eW9tY3dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxNDc1NTQsImV4cCI6MjEwMTcyMzU1NH0.SKhvYu3Eg5MsiYgl9s6nWmFXptIspn-Zt6R0_wIbDWk";
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const _sbBase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // ---- PLATAFORMA DE COORDINACIÓN · SOLO LECTURA ----
+  // Única tabla con escritura permitida: el Registro de Notas del perfil. Cualquier otro insert/update/upsert/delete se bloquea aquí.
+  const SOLO_LECTURA = true;
+  const TABLAS_ESCRITURA_PERMITIDAS = ['notas_academicas'];
+  const _bloqueo = { data: null, error: { message: 'Acción no permitida en la plataforma de coordinación (solo lectura).' } };
+  const _stubBloqueado = new Proxy(function(){}, { get(_, p){ return p === 'then' ? (res, rej) => Promise.resolve(_bloqueo).then(res, rej) : () => _stubBloqueado; }, apply(){ return _stubBloqueado; } });
+  const supabaseClient = new Proxy(_sbBase, { get(base, p){
+    if (p === 'from') return (tabla) => {
+      const q = base.from(tabla);
+      if (TABLAS_ESCRITURA_PERMITIDAS.includes(tabla)) return q;
+      return new Proxy(q, { get(o, k){ if (['insert','update','upsert','delete'].includes(k)) return () => _stubBloqueado; const v = o[k]; return typeof v === 'function' ? v.bind(o) : v; } });
+    };
+    const v = base[p]; return typeof v === 'function' ? v.bind(base) : v;
+  } });
 </script>
 <script>
   const $ = (id) => document.getElementById(id);
@@ -1957,15 +1841,22 @@
     return localStorage.getItem(LS_COLEGIATURA) || '';
   }
 
-  $('btnFirmaProfesional').addEventListener('click', () => {
-    $('campoColegiatura').value = obtenerColegiatura();
+  $('btnFirmaProfesional').addEventListener('click', async () => {
+    const campo = $('campoColegiatura');
+    campo.value = obtenerColegiatura();
     abrirModal('modalFirma');
+    if (campo.value) return;
+    // Sin dato local: se toma el N.º de colegiatura que el área de psicología ya consignó en sus reportes / informes (base compartida)
+    for (const tabla of ['reportes_sesion', 'informes_psicologicos']) {
+      try {
+        const { data } = await supabaseClient.from(tabla).select('numero_colegiatura').not('numero_colegiatura', 'is', null).neq('numero_colegiatura', '').limit(1);
+        if (data && data.length && data[0].numero_colegiatura) { campo.value = String(data[0].numero_colegiatura).trim(); return; }
+      } catch (err) { /* columna/tabla no disponible: se deja "No registrado" */ }
+    }
   });
 
   $('formFirma').addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    const valor = $('campoColegiatura').value.trim();
-    localStorage.setItem(LS_COLEGIATURA, valor);
+    ev.preventDefault();   // solo lectura: no se guarda nada
     cerrarModales();
   });
 
@@ -1988,7 +1879,7 @@
   // ============================================================
   // NAVEGACIÓN ENTRE SECCIONES PRINCIPALES (Estudiantes / Reportes por fecha)
   // ============================================================
-  $('navEstudiantes').addEventListener('click', () => cambiarSeccionPrincipal('estudiantes'));
+  $('navEstudiantes').addEventListener('click', () => { cambiarSeccionPrincipal('estudiantes'); cargarEstudiantes(); });
 
   // ============================================================
   // DESCARGAR BASE DE DATOS — PDF directo (jsPDF + autoTable), sin ventana previa
@@ -2049,18 +1940,20 @@
 
   function cambiarSeccionPrincipal(seccion){
     const esEstudiantes = seccion === 'estudiantes';
-    const esDash = seccion === 'dashboards';
-    const esCom = seccion === 'comunidad';
-    const esAdmin = seccion === 'admin';
+    const esCom = seccion === 'comunidad';                 // Intervención Comunitaria = Matriz Única (panel 3 del módulo de dashboards)
+    const esDash = seccion === 'dashboards' || esCom;
     $('seccionEstudiantes').classList.toggle('hidden', !esEstudiantes);
-    $('seccionComunidad').classList.toggle('hidden', !esCom);
+    $('seccionComunidad').classList.add('hidden');         // el formulario de registro de la plataforma principal no existe aquí
     $('seccionDashboards').classList.toggle('hidden', !esDash);
-    $('seccionAdmin').classList.toggle('hidden', !esAdmin);
-    $('seccionReportesFecha').classList.toggle('hidden', esEstudiantes || esDash || esCom || esAdmin);
-    $('btnAdmin').classList.toggle('nav-activo', esAdmin || seccion === 'reportes');
-    $('navComunidad').classList.toggle('nav-activo', esCom);
+    $('seccionReportesFecha').classList.add('hidden');
     $('navEstudiantes').classList.toggle('nav-activo', esEstudiantes);
-    $('btnDashboards').classList.toggle('nav-activo', esDash);
+    $('navComunidad').classList.toggle('nav-activo', esCom);
+    $('btnDashboards').classList.toggle('nav-activo', esDash && !esCom);
+    if ($('dashTabsBar')) $('dashTabsBar').classList.toggle('hidden', esCom);
+    if ($('comHeadCoord')) $('comHeadCoord').classList.toggle('hidden', !esCom);
+    if (esCom && $('dashTab3')) $('dashTab3').click();
+    else if (esDash && window.__coordVistaCom && $('dashTab1')) $('dashTab1').click();
+    window.__coordVistaCom = esCom;
   }
 
   // ============================================================
@@ -2377,14 +2270,11 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               Ver datos
             </button>
-            <button class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold btn-editar">Editar</button>
-            <button class="btn-danger rounded-lg px-3 py-1.5 text-xs font-semibold btn-eliminar">Eliminar</button>
           </div>
         </td>`;
       tr.querySelector('.abrir-perfil').addEventListener('click', () => abrirPerfil(e.dni));
       tr.querySelector('.btn-ver-datos').addEventListener('click', () => abrirVerDatos(e));
-      tr.querySelector('.btn-editar').addEventListener('click', () => abrirModalEditar(e));
-      tr.querySelector('.btn-eliminar').addEventListener('click', () => eliminarEstudiante(e));
+      tr.querySelectorAll('select').forEach(s => { s.disabled = true; });   // coordinación: estado/rendimiento/situación en solo lectura
       const btnObs = tr.querySelector('.btn-obs');
       if (btnObs) {
         const nombreObs = `${e.apellidos}, ${e.nombres}`;
@@ -2897,7 +2787,7 @@
   // Catálogo único: lo usan los selectores del perfil y los ejes del radar del Dashboard 2
   window.SC_CATALOGO = {
     factores: [
-      { t:'Salud Física', subs:['Gestación, maternidad o periodo de lactancia', 'Diagnóstico médico / Enfermedad (Anemia, gastritis, patología aguda/crónica)', 'Descanso médico o reposo prolongado', 'Pausa académica formal por motivos de salud'] },
+      { t:'Salud Física', subs:['Gestación, maternidad y periodo de lactancia', 'Diagnóstico médico / enfermedad crónica o aguda (gastritis, anemia, patología aguda/crónica, etc.)', 'Descanso médico, reposo prolongado o incapacidad temporal', 'Pausa académica formal o ajuste de carga por motivos de salud'] },
       { t:'Factores Psicosociales', subs:['Sintomatología de estrés y ansiedad', 'Dificultades en relaciones afectivas / Ruptura sentimental', 'Dificultades en regulación emocional y resiliencia', 'Aislamiento social o red de apoyo limitada', 'Hábitos de vida y autocuidado desadaptativos'] },
       { t:'Factores Académicos', subs:['Sobrecarga académica y de evaluación', 'Ansiedad por rendimiento y exigencia de notas', 'Historial de desaprobación / Riesgo de pérdida de beca', 'Dificultades en orientación o tutoría académica', 'Incongruencia vocacional / Duda con la carrera'] },
       { t:'Factores Socioeconómicos', subs:['Dificultades de financiamiento y manutención', 'Conflictos de tiempo entre estudio y trabajo', 'Dificultades de adaptación al cambio de residencia / ciudad', 'Inestabilidad e imprevistos económicos'] },
@@ -2905,14 +2795,65 @@
     ],
     // Nombres de la versión anterior -> nombre vigente (los perfiles ya guardados se leen sin perder el dato)
     alias:    { 'Salud Física y Gestación':'Salud Física', 'Factores Académicos e Institucionales':'Factores Académicos','Factores Psicosociales y Personales':'Factores Psicosociales', 'Factores Socioeconómicos y del Entorno':'Factores Socioeconómicos', 'Factores Familiares y del Entorno Hogar':'Factores Familiares' },
-    aliasSub: { 'Gestación, maternidad / lactancia y monitoreo de salud':'Gestación, maternidad o periodo de lactancia', 'Condición médica temporal o reposo/descanso médico':'Descanso médico o reposo prolongado', 'Pausa académica formal por salud / reserva de matrícula':'Pausa académica formal por motivos de salud', 'Dificultades de autorregulación emocional y resiliencia':'Dificultades en regulación emocional y resiliencia', 'Aislamiento social y escasa red de apoyo':'Aislamiento social o red de apoyo limitada', 'Estilos de vida y hábitos desadaptativos':'Hábitos de vida y autocuidado desadaptativos' },
-    impactos: ['Estrés o sobrecarga emocional derivada del factor', 'Dificultad de adaptación o interferencia en el rendimiento académico', 'Afectación económica o familiar asociada', 'Sin afectación emocional significativa / Estado estable'],
+    aliasSub: { 'Gestación, maternidad / lactancia y monitoreo de salud':'Gestación, maternidad y periodo de lactancia', 'Gestación, maternidad o periodo de lactancia':'Gestación, maternidad y periodo de lactancia',
+      'Diagnóstico médico / Enfermedad (Anemia, gastritis, patología aguda/crónica)':'Diagnóstico médico / enfermedad crónica o aguda (gastritis, anemia, patología aguda/crónica, etc.)',
+      'Condición médica temporal o reposo/descanso médico':'Descanso médico, reposo prolongado o incapacidad temporal', 'Descanso médico o reposo prolongado':'Descanso médico, reposo prolongado o incapacidad temporal',
+      'Pausa académica formal por salud / reserva de matrícula':'Pausa académica formal o ajuste de carga por motivos de salud', 'Pausa académica formal por motivos de salud':'Pausa académica formal o ajuste de carga por motivos de salud', 'Dificultades de autorregulación emocional y resiliencia':'Dificultades en regulación emocional y resiliencia', 'Aislamiento social y escasa red de apoyo':'Aislamiento social o red de apoyo limitada', 'Estilos de vida y hábitos desadaptativos':'Hábitos de vida y autocuidado desadaptativos' },
+    // Texto que completa la frase "…derivada del factor ___" según el Nivel 1 (la clave guardada en la base NO cambia: así los perfiles ya guardados siguen funcionando)
+    factorAdj: { 'Salud Física':'de salud física', 'Factores Psicosociales':'psicosocial', 'Factores Académicos':'académico', 'Factores Socioeconómicos':'socioeconómico', 'Factores Familiares':'familiar' },
+    // Nivel 3 · lista completa de valores válidos (el PRIMERO debe seguir siendo la clave dinámica del estrés). Los 3 anteriores a las 4 opciones de Salud Física son valores antiguos: se conservan para no perder datos ya guardados.
+    impactos: [
+      'Estrés o sobrecarga emocional derivada del factor',
+      'Afectación emocional e inestabilidad anímica derivada del factor psicosocial',
+      'Ansiedad situacional y dificultad de concentración por crisis afectiva',
+      'Desregulación emocional vinculada a conflictos interpersonales',
+      'Interferencia en el rendimiento académico y la concentración',
+      'Dificultades de adaptación al entorno de estudio y convivencia',
+      'Sintomatología de estrés agudo frente a la carga académica',
+      'Afectación por dinámica familiar disfuncional o presión del entorno',
+      'Aislamiento y reducción significativa de la red de apoyo',
+      'Sobrecarga emocional leve, sin afectación crítica en el rendimiento',
+      'Sin afectación emocional significativa (seguimiento preventivo)',
+      'Dificultad de adaptación o interferencia en el rendimiento académico',
+      'Afectación económica o familiar asociada',
+      'Sin afectación emocional significativa / Estado estable',
+      'Afectación anímica y desgaste emocional derivado del malestar físico y el reposo',
+      'Afectación somática y esfuerzo de adaptación frente a los síntomas de la condición médica',
+      'Ansiedad situacional o inquietud ante los síntomas y la evolución de la enfermedad',
+      'Restricción de la rutina y limitación temporal de la red de apoyo por condición médica'],
+    // Opciones del Nivel 3 que se ofrecen según el Factor Principal (Nivel 1), para que la frase siempre sea coherente con el factor elegido
+    impactosPorFactor: {
+      'Factores Psicosociales':   [1, 2, 3, 8, 0, 9, 10],
+      'Factores Académicos':      [4, 5, 6, 0, 9, 10],
+      'Factores Familiares':      [7, 8, 12, 0, 9, 10],
+      'Factores Socioeconómicos': [12, 4, 5, 0, 9, 10],
+      'Salud Física':             [14, 15, 16, 17, 0, 4, 6, 5, 9, 10],
+    },
+    // Clasificación explícita que usa el semáforo de riesgo para las opciones nuevas ('afecta' = impacto vigente · 'estable' = leve o sin afectación)
+    impactoClase: {
+      'Afectación emocional e inestabilidad anímica derivada del factor psicosocial':'afecta', 'Ansiedad situacional y dificultad de concentración por crisis afectiva':'afecta',
+      'Desregulación emocional vinculada a conflictos interpersonales':'afecta', 'Interferencia en el rendimiento académico y la concentración':'afecta',
+      'Dificultades de adaptación al entorno de estudio y convivencia':'afecta', 'Sintomatología de estrés agudo frente a la carga académica':'afecta',
+      'Afectación por dinámica familiar disfuncional o presión del entorno':'afecta', 'Aislamiento y reducción significativa de la red de apoyo':'afecta',
+      'Afectación anímica y desgaste emocional derivado del malestar físico y el reposo':'afecta', 'Afectación somática y esfuerzo de adaptación frente a los síntomas de la condición médica':'afecta',
+      'Ansiedad situacional o inquietud ante los síntomas y la evolución de la enfermedad':'afecta', 'Restricción de la rutina y limitación temporal de la red de apoyo por condición médica':'afecta',
+      'Sobrecarga emocional leve, sin afectación crítica en el rendimiento':'estable', 'Sin afectación emocional significativa (seguimiento preventivo)':'estable' },
     // Un caso queda DETECTADO de forma implícita al registrar un factor de riesgo (cuenta en el acumulado del programa).
     // El estado manual describe solo la fase de atención.
     estados:  [{ v:'atencion',  i:'🟡', t:'En Atención / Soporte Activo', d:'El estudiante se encuentra en proceso de psicoterapia o consejería activa.' },
                { v:'evolucion', i:'🔵', t:'Evolución Favorable', d:'El estudiante muestra progreso positivo y mejoría adaptativa.' },
                { v:'resuelto',  i:'🟢', t:'Caso Resuelto / Alta', d:'El problema o riesgo ha sido superado / cerrado exitosamente.' },
-               { v:'abandono',  i:'🔴', t:'Abandono del Soporte Psicológico', d:'Deserción terapéutica o inasistencia del becario al proceso de acompañamiento.' }],
+               { v:'abandono',  i:'🔴', t:'Abandono del Soporte Psicológico', d:'Deserción terapéutica o inasistencia del becario al proceso de acompañamiento.' },
+               { v:'monitoreo', i:'🟣', t:'Monitoreo general / Seguimiento preventivo', d:'Situación física, médica o general que no requiere psicoterapia clínica intensiva, pero sí el monitoreo constante que se realiza a todos los becarios.' }],
+  };
+  (function(){ const C = window.SC_CATALOGO; Object.keys(C.impactosPorFactor).forEach(k => { C.impactosPorFactor[k] = C.impactosPorFactor[k].map(i => C.impactos[i]); }); })();
+  // Frase completa y legible del Nivel 3. Recibe el valor guardado y el factor (Nivel 1); lo usan el selector del perfil, el Cuadro de Resumen Mensual y el PDF.
+  window.scImpactoTexto = function(valor, factor){
+    const v = String(valor || '').trim(); if (!v) return '';
+    const C = window.SC_CATALOGO, base = C.impactos[0];
+    if (v !== base) return v;
+    const f = C.alias[factor] || factor;
+    return `${base} ${C.factorAdj[f] || 'seleccionado'}`;   // la clave ya termina en "…derivada del factor"
   };
   (function poblarSelectoresSC(){
     const C = window.SC_CATALOGO, op = (t) => `<option>${t}</option>`;
@@ -2920,7 +2861,7 @@
     $('scEstadoCaso').innerHTML = C.estados.map(e => `<option value="${e.v}">${e.i} ${e.t}</option>`).join('');
   })();
   // 'evolucion', 'resuelto' y 'abandono' se conservan; cualquier otro valor (incluidos los antiguos 'detectado', 'proceso' y 'activo') se lee como 'atencion'
-  const scNormEstado = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono') ? v : 'atencion';
+  const scNormEstado = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono' || v === 'monitoreo') ? v : 'atencion';
   const scHintEstado = () => { const e = window.SC_CATALOGO.estados.find(x => x.v === $('scEstadoCaso').value); $('scEstadoHint').textContent = e ? e.d : ''; };
   $('scEstadoCaso').addEventListener('change', scHintEstado);
 
@@ -2932,11 +2873,27 @@
     inp.addEventListener('change', () => { inp.value = scPaso(inp.value, 0); });
   });
   // El estado del caso solo aplica si hay un factor de riesgo principal seleccionado
-  const scSyncEstado = () => { const sinFactor = !$('scFactor').value; $('scEstadoCaso').disabled = sinFactor; $('scImpacto').disabled = sinFactor; $('scNivelRiesgo').disabled = sinFactor; };
+  // Nivel 4: con factor se ofrecen todos los estados; SIN factor (becario estable) solo "Sin registrar" y "Monitoreo general / Seguimiento preventivo"
+  function scPoblarEstados(factor, valor){
+    const sel = $('scEstadoCaso'), C = window.SC_CATALOGO, op = (e) => `<option value="${e.v}">${e.i} ${e.t}</option>`;
+    if (factor) {
+      sel.innerHTML = C.estados.map(op).join('');
+      sel.value = C.estados.some(e => e.v === valor) ? valor : 'atencion';
+    } else {
+      sel.innerHTML = '<option value="">Sin registrar (sin factor de riesgo)</option>' + op(C.estados.find(e => e.v === 'monitoreo'));
+      sel.value = valor === 'monitoreo' ? 'monitoreo' : '';
+    }
+    scHintEstado();
+  }
+  // Solo el Nivel 3 y el Nivel 5 dependen del Factor Principal; el Nivel 4 siempre está disponible
+  const scSyncEstado = () => { const sinFactor = !$('scFactor').value; $('scEstadoCaso').disabled = false; $('scImpacto').disabled = sinFactor; $('scNivelRiesgo').disabled = sinFactor; };
   // Nivel 3: Impacto psicoemocional (se habilita al elegir el Factor Principal)
   function scPoblarImpactos(factor, valor){
-    const sel = $('scImpacto'), lista = window.SC_CATALOGO.impactos;
-    sel.innerHTML = `<option value="">${factor ? 'Seleccionar impacto…' : 'Primero elige un factor principal'}</option>` + lista.map(x => `<option>${x}</option>`).join('');
+    const sel = $('scImpacto'), C = window.SC_CATALOGO, f = C.alias[factor] || factor;
+    const lista = (C.impactosPorFactor[f] || C.impactos).slice();
+    const previo = !!valor && C.impactos.includes(valor) && !lista.includes(valor);   // valor guardado que no pertenece a la lista del factor: se conserva
+    if (previo) lista.push(valor);
+    sel.innerHTML = `<option value="">${factor ? 'Seleccionar impacto…' : 'Primero elige un factor principal'}</option>` + lista.map(x => `<option value="${x}">${window.scImpactoTexto(x, factor)}${previo && x === valor ? ' (registro anterior)' : ''}</option>`).join('');
     sel.disabled = !factor;
     sel.value = lista.includes(valor) ? valor : '';
   }
@@ -2949,7 +2906,7 @@
     sel.value = subs.includes(valor) ? valor : '';
   }
   // onChange del Nivel 1: repuebla el Nivel 2, reinicia el Nivel 3 y habilita/deshabilita Nivel 3 y 4
-  $('scFactor').addEventListener('change', () => { const f = $('scFactor').value; scPoblarSubfactores(f, ''); scPoblarImpactos(f, ''); scSyncEstado(); });
+  $('scFactor').addEventListener('change', () => { const f = $('scFactor').value; const n4 = $('scEstadoCaso').value; scPoblarSubfactores(f, ''); scPoblarImpactos(f, ''); scPoblarEstados(f, n4); scSyncEstado(); });
   const scFactorVig = (v) => window.SC_CATALOGO.alias[v] || v;
   const scSubVig = (v) => window.SC_CATALOGO.aliasSub[v] || v;
 
@@ -2961,7 +2918,7 @@
     setSel('scFactor', scFactorVig(d.factor_riesgo_principal));
     scPoblarSubfactores($('scFactor').value, scSubVig(d.subfactor_riesgo));
     scPoblarImpactos($('scFactor').value, d.impacto_psicoemocional);
-    $('scEstadoCaso').value = scNormEstado(d.estado_caso);
+    scPoblarEstados($('scFactor').value, $('scFactor').value ? scNormEstado(d.estado_caso) : d.estado_caso);   // sin factor: solo se admite 'monitoreo'
     $('scNivelRiesgo').value = ['bajo', 'medio', 'alto', 'critico'].includes(d.nivel_riesgo_psicologico) ? d.nivel_riesgo_psicologico : '';
     $('scPerdidaBeca').checked = d.riesgo_perdida_beca === true;
     scSyncEstado(); scHintEstado();
@@ -2993,7 +2950,7 @@
       factor_riesgo_principal: v.factor || null,
       subfactor_riesgo: v.factor && scSubsDe(v.factor).includes(v.subfactor) ? v.subfactor : null,
       impacto_psicoemocional: v.factor && window.SC_CATALOGO.impactos.includes(v.impacto) ? v.impacto : null,
-      estado_caso: v.factor ? scNormEstado(v.estado) : null,
+      estado_caso: v.factor ? scNormEstado(v.estado) : (v.estado === 'monitoreo' ? 'monitoreo' : null),   // becario estable: sin factor, solo Monitoreo general
       nivel_riesgo_psicologico: v.factor && ['bajo', 'medio', 'alto', 'critico'].includes(v.nivel) ? v.nivel : null,
       riesgo_perdida_beca: !!v.perdidaBeca,
     };
@@ -3040,7 +2997,6 @@
   // Carga SOLO cuando el PIN fue validado: nada clínico se pinta ni se consulta antes
   async function spCargarProtegido(){
     if (!estudianteActivo) return;
-    cargarSeguimientoClinico(estudianteActivo);
     await Promise.all([cargarSesiones(), cargarInformes()]);
     await cargarDocumentos();
   }
@@ -3095,7 +3051,7 @@
     $('perfilEstadoActual').value = normalizarEstado(data.estado_actual);
     $('perfilObservaciones').value = data.observaciones || '';
     actualizarBadgesPerfil();
-    $('perfilObservaciones').placeholder = 'Motivo o detalle que complementa el estado (opcional)';
+    $('perfilObservaciones').placeholder = 'Sin observaciones registradas';
 
     $('vistaLista').classList.add('hidden');
     $('vistaPerfil').classList.remove('hidden');
@@ -3107,7 +3063,7 @@
     $('docsInformesWrap').classList.add('hidden');
     spLimpiarProtegido();
     spAplicarEstado();
-    if (spDesbloqueado()) await spCargarProtegido();   // sin PIN no se consulta ni se muestra nada clínico
+    await spCargarProtegido();   // coordinación: reportes e informes visibles; el seguimiento clínico permanece bloqueado
   }
 
   $('perfilEstadoActual').addEventListener('change', async (ev) => {
@@ -3203,9 +3159,6 @@
           </div>
         </div>
         <div class="flex items-center gap-2 whitespace-nowrap">
-          <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-editar-sesion" title="Editar">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Editar
-          </button>
           <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-preview">Vista previa</button>
         </div>
       </div>`);
@@ -3213,7 +3166,6 @@
     cont.querySelectorAll('[data-id]').forEach(div => {
       const r = registros.find(x => x.id === div.dataset.id);
       div.querySelector('.btn-preview').addEventListener('click', () => previsualizarSesion(r));
-      div.querySelector('.btn-editar-sesion').addEventListener('click', () => editarSesion(r));
     });
     actualizarVaciosYConteos();
   }
@@ -3306,9 +3258,6 @@
           </div>
         </div>
         <div class="flex items-center gap-2 whitespace-nowrap">
-          <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-editar-informe" title="Editar">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Editar
-          </button>
           <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs font-semibold btn-preview">Vista previa</button>
         </div>
       </div>`);
@@ -3316,7 +3265,6 @@
     cont.querySelectorAll('[data-id]').forEach(div => {
       const r = registros.find(x => x.id === div.dataset.id);
       div.querySelector('.btn-preview').addEventListener('click', () => previsualizarInforme(r));
-      div.querySelector('.btn-editar-informe').addEventListener('click', () => editarInforme(r));
     });
     actualizarVaciosYConteos();
   }
@@ -3480,14 +3428,12 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               Ver PDF
             </button>
-            <button type="button" class="btn-danger rounded-xl px-3 py-1.5 text-xs font-semibold btn-eliminar-doc">Eliminar</button>
           </div>
         </div>`).join('');
 
       $('listaDocs' + suf).querySelectorAll('[data-doc]').forEach(div => {
         const d = docs.find(x => String(x.id) === div.dataset.doc);
         div.querySelector('.btn-ver-pdf').addEventListener('click', () => abrirVisorPdf(d));
-        div.querySelector('.btn-eliminar-doc').addEventListener('click', () => eliminarDocumento(d));
       });
 
     });
@@ -3880,7 +3826,7 @@
   //   🟡 Medio : 1 desaprobado + vulnerabilidad emocional/médica En Atención · 2 desaprobados con estabilidad o Evolución Favorable.
   //   🔴 Alto  : 3+ desaprobados · 2+ desaprobados + alerta clínica/familiar crítica En Atención · vulnerabilidad extrema o riesgo inminente de perder la beca.
   const NIVELES_CLINICOS = ['bajo', 'medio', 'alto', 'critico'];
-  const n4Norm = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono') ? v : 'atencion';   // mismo criterio que scNormEstado
+  const n4Norm = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono' || v === 'monitoreo') ? v : 'atencion';   // mismo criterio que scNormEstado
   // "Riesgo inminente de perder la beca" detectable en las notas: curso jalado 2 veces / segunda desaprobación / pérdida de beca
   const RE_BECA_NOTA = /jalad[oa]s?\s+(?:2|dos)\s+veces|desaprobad[oa]s?\s+(?:2|dos)\s+veces|segunda\s+(?:vez|desaprobaci)|tercera\s+matr[ií]cula|p[eé]rdida\s+de\s+(?:la\s+)?beca/i;
   // Variable B: indicadores severos y de vulnerabilidad (por factor, subfactor, impacto y nivel clínico manual) + Nivel 4.
@@ -3892,10 +3838,12 @@
     out.tieneCaso = !!factor || NIVELES_CLINICOS.includes(lv);
     if (!out.tieneCaso) return out;
     out.estado = n4Norm(est.estado_caso);
-    out.activo = out.estado === 'atencion' || out.estado === 'abandono';   // Nivel 4: soporte activo (o abandonado: sin protección)
+    out.activo = out.estado === 'atencion' || out.estado === 'abandono' || out.estado === 'monitoreo';   // Nivel 4: soporte activo, monitoreo preventivo (vulnerabilidad vigente) o abandonado (sin protección)
     out.protegido = !out.activo;                                           // evolución favorable / resuelto / alta
     const medioMas = lv === 'medio' || lv === 'alto' || lv === 'critico';
-    const estable = /sin afectaci|estable/i.test(imp), afecta = /estr[eé]s|sobrecarga|adaptaci[oó]n|interferencia|econ[oó]mica o familiar/i.test(imp);
+    const clsImp = ((window.SC_CATALOGO || {}).impactoClase || {})[imp];   // clasificación explícita de las opciones nuevas del Nivel 3
+    const estable = clsImp ? clsImp === 'estable' : /sin afectaci|estable/i.test(imp);
+    const afecta = clsImp ? clsImp === 'afecta' : /estr[eé]s|sobrecarga|adaptaci[oó]n|interferencia|econ[oó]mica o familiar/i.test(imp);
     const salud = /salud/i.test(factor), medCompleja = /diagn[oó]stico|enfermedad|descanso|reposo/i.test(sub);
     // ---- Indicadores severos (alerta clínica / familiar crítica) ----
     if (lv === 'critico') out.sev.push('Alerta clínica crítica (nivel Crítico)');
@@ -3903,7 +3851,7 @@
     if (est.estado_caso === 'abandono') out.sev.push('Abandono del soporte psicológico');
     if (/pausa acad/i.test(sub)) out.sev.push('Pausa académica formal por motivos de salud');
     if (salud && medCompleja && medioMas) out.sev.push('Condición de salud severa con reposo o seguimiento médico');
-    if (/familiar|socioecon/i.test(factor) && /econ[oó]mica o familiar/i.test(imp) && medioMas) out.sev.push('Alerta sociofamiliar crítica');
+    if (/familiar|socioecon/i.test(factor) && /econ[oó]mica o familiar|din[aá]mica familiar/i.test(imp) && medioMas) out.sev.push('Alerta sociofamiliar crítica');
     // ---- Vulnerabilidades (si el clínico no marcó nivel Bajo) ----
     if (lv !== 'bajo') {
       if (/psicosocial/i.test(factor) && !estable) out.vul.push('Vulnerabilidad emocional');
@@ -3918,7 +3866,7 @@
     return out;
   }
   const marcadaPerdidaBeca = (est) => !!est && (est.riesgo_perdida_beca === true || est.riesgo_perdida_beca === 'true');
-  const N4_TXT = { atencion:'En Atención / Soporte Activo', evolucion:'Evolución Favorable', resuelto:'Caso Resuelto / Alta', abandono:'Abandono del soporte', sin:'' };
+  const N4_TXT = { atencion:'En Atención / Soporte Activo', evolucion:'Evolución Favorable', resuelto:'Caso Resuelto / Alta', abandono:'Abandono del soporte', monitoreo:'Monitoreo general / Seguimiento preventivo', sin:'' };
   function evaluarRiesgo(est, notas){
     const porSem = (s) => notas.filter(x => x.semestre === s).map(x => ({ curso:x.curso, nota:x.nota == null ? null : Number(x.nota), obs:x.observacion || '', estado:x.estado || null }));
     const base = porSem(SEM_BASE), act = porSem(SEM_ACTUAL);
@@ -4235,7 +4183,7 @@
 
   $('comBtnNueva').addEventListener('click', () => abrirForm(null));
   $('comBtnCancelar').addEventListener('click', cerrarForm);
-  $('navComunidad').addEventListener('click', () => { cambiarSeccionPrincipal('comunidad'); cargar(); });
+  $('navComunidad').addEventListener('click', () => window.abrirDashboards('comunidad'));   // coordinación: la Matriz Única (tabla + gráficos) en solo lectura
 
   $('comForm').addEventListener('submit', async (ev) => {
     ev.preventDefault();
@@ -4353,16 +4301,18 @@
   //  Todo caso con factor registrado cuenta como detectado (acumulado = total). aten (amarillo) = En Atención / Soporte Activo · evol (azul) = Evolución Favorable · res (verde) = Caso Resuelto / Alta
   function casosPorFactor(L, factores, alias){
     const norm = (v) => (alias && alias[v]) || v;
-    const aten = factores.map(() => 0), evol = factores.map(() => 0), res = factores.map(() => 0), aband = factores.map(() => 0);
+    const aten = factores.map(() => 0), evol = factores.map(() => 0), res = factores.map(() => 0), aband = factores.map(() => 0), mon = factores.map(() => 0);
+    let monGen = 0;   // becarios estables sin factor registrado cuyo Nivel 4 es Monitoreo general / Seguimiento preventivo
     L.forEach(e => {
-      const i = factores.indexOf(norm(e.factor_riesgo_principal)); if (i < 0) return;
+      const i = factores.indexOf(norm(e.factor_riesgo_principal));
+      if (i < 0) { if (!e.factor_riesgo_principal && e.estado_caso === 'monitoreo') monGen++; return; }
       const est = scNormEstado(e.estado_caso);   // antiguos 'detectado' / 'proceso' / 'activo' se leen como 'atencion'
-      if (est === 'evolucion') evol[i]++; else if (est === 'resuelto') res[i]++; else if (est === 'abandono') aband[i]++; else aten[i]++;
+      if (est === 'evolucion') evol[i]++; else if (est === 'resuelto') res[i]++; else if (est === 'abandono') aband[i]++; else if (est === 'monitoreo') mon[i]++; else aten[i]++;
     });
     const sum = (a) => a.reduce((x, y) => x + y, 0);
     const sinClasificar = L.filter(e => e.factor_riesgo_principal && !factores.includes(norm(e.factor_riesgo_principal))).length;
-    const totales = factores.map((_, i) => aten[i] + evol[i] + res[i] + aband[i]);
-    return { aten, evol, res, aband, totales, totA: sum(aten), totE: sum(evol), totR: sum(res), totB: sum(aband), total: sum(totales), sinClasificar };
+    const totales = factores.map((_, i) => aten[i] + evol[i] + res[i] + aband[i] + mon[i]);
+    return { aten, evol, res, aband, mon, totales, totA: sum(aten), totE: sum(evol), totR: sum(res), totB: sum(aband), totM: sum(mon) + monGen, total: sum(totales) + monGen, totalFactor: sum(totales), monGen, sinClasificar };
   }
   // Parte una etiqueta larga en varias líneas para los ejes del radar
   function partirEtiqueta(t, max){
@@ -4650,20 +4600,20 @@
     pintarTablaMx();
   }
   // Nivel 4 (Estado del Caso) con el mismo ícono y nombre del selector del perfil
-  const N4_UI = { atencion:['🟡', 'En Atención / Soporte Activo'], evolucion:['🔵', 'Evolución Favorable'], resuelto:['🟢', 'Resuelto / Alta'], abandono:['🔴', 'Abandono del soporte'] };
-  const estado4Html = (k) => N4_UI[k] ? `<span style="white-space:nowrap">${N4_UI[k][0]} ${N4_UI[k][1]}</span>` : '<span style="color:var(--ink-muted)">Sin caso registrado</span>';
+  const N4_UI = { atencion:['🟡', 'Atención / Soporte<br>psicológico activo'], evolucion:['🔵', 'Evolución<br>favorable'], resuelto:['🟢', 'Resuelto / Alta'], abandono:['🔴', 'Abandono<br>del soporte'], monitoreo:['🟣', 'Monitoreo general /<br>Seguimiento preventivo'] };
+  const estado4Html = (k) => N4_UI[k] ? `<span class="mx-est"><span>${N4_UI[k][0]}</span><span>${N4_UI[k][1]}</span></span>` : '<span style="color:var(--ink-muted)">Sin caso registrado</span>';
   function pintarTablaMx(){
     const filas = mxVista === 'prio' ? mxFilas.filter(x => x.r.nivel === 'rojo' || x.r.nivel === 'amarillo') : mxFilas;
     $('d1MxConteo').textContent = `Mostrando ${filas.length} de ${mxFilas.length} becarios`;
     $('d1MxTabla').innerHTML = filas.map(({ e, r }) => {
       const u = MX_NIV[r.nivel];
       const jal = !r.tieneNotas ? '<span style="color:var(--ink-muted)">—</span>' : (r.desap ? `<strong style="color:#9B3532">${r.desap}</strong>` : '<span style="color:var(--ink-muted)">0</span>');
-      return `<tr><td class="px-3 py-2"><span class="font-semibold">${esc(nombreDe(e))}</span></td>
-        <td class="px-3 py-2 text-xs">${esc(e.carrera || '—')}<span class="block text-[11px]" style="color:var(--ink-muted)">${esc(e.institucion || '—')}</span></td>
-        <td class="px-3 py-2 text-center">${jal}</td>
-        <td class="px-3 py-2 text-xs">${estado4Html(r.estado4)}</td>
-        <td class="px-3 py-2"><span class="badge" style="${u.css};white-space:nowrap">${u.emo} ${u.txt}</span></td>
-        <td class="px-3 py-2 text-center no-print"><button type="button" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap" data-mx-dni="${esc(e.dni)}">Ver Perfil →</button></td></tr>`;
+      return `<tr><td><span class="mx-nom">${esc(nombreDe(e))}</span></td>
+        <td><span class="mx-nom" style="font-weight:600">${esc(e.carrera || '—')}</span><span class="mx-sub">${esc(e.institucion || '—')}</span></td>
+        <td class="mx-c">${jal}</td>
+        <td>${estado4Html(r.estado4)}</td>
+        <td><span class="badge" style="${u.css};white-space:nowrap">${u.emo} ${u.txt}</span></td>
+        <td class="mx-c no-print"><button type="button" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap" data-mx-dni="${esc(e.dni)}">Ver Perfil →</button></td></tr>`;
     }).join('');
     const v = $('d1MxVacio');
     v.classList.toggle('hidden', filas.length > 0);
@@ -4687,9 +4637,9 @@
     const prio = vivos.filter(e => clin(e) === 'SP');
     const suma = (campo) => L.reduce((a,e) => a + (Number(e[campo])||0), 0);
     const sesiones = suma('sesiones_psicologicas_num'), vd = suma('visitas_domiciliarias_num'), fam = suma('intervenciones_familiares_num');
-    // Seguimiento activo = En Atención / Soporte Activo + Evolución Favorable (el Abandono y el Alta no suman); misma fuente que la dona
+    // Tarjeta superior: solo los 3 estados activos (En Atención / Soporte Activo + Evolución Favorable + Monitoreo general / Seguimiento preventivo). El Alta y el Abandono NO suman aquí; la dona y el registro descriptivo conservan los 5 estados.
     const _rcKpi = casosPorFactor(L, (window.SC_CATALOGO || { factores: [] }).factores.map(f => f.t), (window.SC_CATALOGO || {}).alias);
-    const casosActivos = _rcKpi.totA + _rcKpi.totE;
+    const casosActivos = _rcKpi.totA + _rcKpi.totE + _rcKpi.totM;   // totM ya incluye a los becarios sin factor con Monitoreo general
     // Texto complementario 100% dinámico: solo se mencionan las categorías con valor mayor a cero
     const complemento = [];
     if (vd > 0) complemento.push(`${vd.toLocaleString('es-PE')} ${vd === 1 ? 'visita domiciliaria' : 'visitas domiciliarias'}`);
@@ -4697,25 +4647,23 @@
     const detalleAtenciones = complemento.length ? `Adicionalmente: ${complemento.join(' y ')}` : '';
     $('d2Kpis').innerHTML =
       kpi('🟢 Becarios en Estado Estable', est, 'Monitoreo general (estados EST / EPA)', COL.verde) +
-      kpi('🔴 Casos Prioritarios en Monitoreo', casosActivos, 'En Atención / Soporte Activo o Evolución Favorable', COL.rojo) +
+      kpi('🔴 Casos Prioritarios en Monitoreo', casosActivos, 'En atención, evolución favorable o monitoreo preventivo', COL.rojo) +
       kpi('🧠 Total de Atenciones / Sesiones Realizadas', sesiones.toLocaleString('es-PE'), detalleAtenciones, COL.azul);
 
     // Dona: distribución de becarios según la etapa de su caso (amarillo / azul / verde / rojo)
     const factores = (window.SC_CATALOGO || { factores: [] }).factores.map(f => f.t);
     const rc = casosPorFactor(L, factores, (window.SC_CATALOGO || {}).alias);
-    const nota = rc.sinClasificar ? ` · ${rc.sinClasificar} caso(s) con factor anterior sin reclasificar en su perfil` : '';
     $('d2RadarVacio').classList.toggle('hidden', rc.total > 0 || rc.sinClasificar > 0);
-    $('d2RadarResumen').textContent = rc.total ? `Casos detectados (acumulado del programa): ${rc.total} · En atención: ${rc.totA} · Evolución favorable: ${rc.totE} · Resueltos / Alta: ${rc.totR} (${fmtPct(rc.totR, rc.total)} del acumulado) · Abandono del soporte: ${rc.totB}` + nota : nota.replace(/^ · /, '');
-    const porFase = [rc.aten, rc.evol, rc.res, rc.aband];   // detalle por factor para el tooltip de cada rebanada
+    const porFase = [rc.aten, rc.evol, rc.res, rc.aband, rc.mon];   // detalle por factor para el tooltip de cada rebanada
     dibujarDona({ type:'doughnut',
-      data:{ labels:['En Atención / Soporte Activo', 'Evolución Favorable', 'Caso Resuelto / Alta', 'Abandono del Soporte Psicológico'],
-        datasets:[{ data:[rc.totA, rc.totE, rc.totR, rc.totB], backgroundColor:['#F59E0B', '#3B82F6', '#10B981', '#EF4444'], borderColor:'#fff', borderWidth:3, hoverOffset:8 }] },
+      data:{ labels:['En Atención / Soporte Activo', 'Evolución Favorable', 'Caso Resuelto / Alta', 'Abandono del Soporte Psicológico', 'Monitoreo general / Seguimiento preventivo'],
+        datasets:[{ data:[rc.totA, rc.totE, rc.totR, rc.totB, rc.totM], backgroundColor:['#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6'], borderColor:'#fff', borderWidth:3, hoverOffset:8 }] },
       options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
         plugins:{
           legend:{ position:'bottom', labels:{ usePointStyle:true, padding:16, font:{ size:12 } } },
           tooltip:{ callbacks:{
             label:(c) => `${c.label}: ${c.raw} becario(s) (${rc.total ? Math.round(c.raw / rc.total * 100) : 0}%)`,
-            afterLabel:(c) => factores.map((f, i) => porFase[c.dataIndex][i] ? `· ${f}: ${porFase[c.dataIndex][i]}` : null).filter(Boolean) } },
+            afterLabel:(c) => factores.map((f, i) => porFase[c.dataIndex][i] ? `· ${f}: ${porFase[c.dataIndex][i]}` : null).filter(Boolean).concat(c.dataIndex === 4 && rc.monGen ? [`· Sin factor de riesgo (becarios estables): ${rc.monGen}`] : []) } },
           datalabels:{ display:(ctx) => ctx.dataset.data[ctx.dataIndex] > 0, textAlign:'center',
             color:(ctx) => ctx.dataIndex === 0 ? '#3B2A00' : '#FFFFFF', font:{ weight:'bold', size:14 },
             formatter:(v) => `${v}\n${rc.total ? Math.round(v / rc.total * 100) : 0}%` },
@@ -4723,9 +4671,24 @@
       plugins:[centroDonaPlugin].concat(typeof ChartDataLabels !== 'undefined' ? [ChartDataLabels] : []) });
 
     // Tabla ejecutiva: becario, institución / carrera, factor principal, subfactor, estado del caso y observaciones
-    const ESTADO_CASO = { atencion:['En Atención / Soporte Activo','rgba(245,158,11,.18)','#92400E','🟡'], evolucion:['Evolución Favorable','rgba(59,130,246,.15)','#1D4ED8','🔵'], resuelto:['Caso Resuelto / Alta','rgba(16,185,129,.16)','#047857','🟢'], abandono:['Abandono del Soporte Psicológico','rgba(127,29,29,.14)','#7F1D1D','🟤'] };
+    const ESTADO_CASO = { atencion:['En Atención / Soporte Activo','rgba(245,158,11,.18)','#92400E','🟡'], evolucion:['Evolución Favorable','rgba(59,130,246,.15)','#1D4ED8','🔵'], resuelto:['Caso Resuelto / Alta','rgba(16,185,129,.16)','#047857','🟢'], abandono:['Abandono del Soporte Psicológico','rgba(127,29,29,.14)','#7F1D1D','🟤'], monitoreo:['Monitoreo general / Seguimiento preventivo','rgba(139,92,246,.15)','#5B21B6','🟣'] };
     const factoresVigentes = (window.SC_CATALOGO || { factores: [] }).factores.map(f => f.t);
-    $('d2Tabla').innerHTML = L.filter(e => factoresVigentes.includes(((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal)).sort(porInstitucionYNombre).map(e => {
+    // Orden por Factor Principal: primero los factores psicológicos y relacionales; "Salud Física" siempre al final
+    const ordenFactorD2 = (e) => { const f = ((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal; return f === 'Salud Física' ? 99 : factoresVigentes.indexOf(f); };
+    // Subfactor abreviado SOLO para esta tabla (el texto completo se conserva en el perfil del becario)
+    const SUB_CORTO_D2 = { 'Gestación, maternidad y periodo de lactancia':'Gestación / lactancia',
+      'Diagnóstico médico / enfermedad crónica o aguda (gastritis, anemia, patología aguda/crónica, etc.)':'Diagnóstico médico',
+      'Descanso médico, reposo prolongado o incapacidad temporal':'Descanso médico / reposo',
+      'Pausa académica formal o ajuste de carga por motivos de salud':'Pausa académica por salud' };
+    const subCortoD2 = (t) => {
+      const x = String(t || '').trim(); if (!x) return '';
+      if (SUB_CORTO_D2[x]) return SUB_CORTO_D2[x];
+      let c = x.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();      // quita aclaraciones entre paréntesis
+      if (c.length > 50) { const k = c.indexOf(' / '); if (k >= 15) c = c.slice(0, k).trim(); }
+      if (c.length > 50) c = c.slice(0, 49).trimEnd() + '…';
+      return c;
+    };
+    $('d2Tabla').innerHTML = L.filter(e => factoresVigentes.includes(((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal)).sort((a, b) => (ordenFactorD2(a) - ordenFactorD2(b)) || porInstitucionYNombre(a, b)).map(e => {
       const facN = ((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal;
       const fac = factoresVigentes.includes(facN) ? facN : '';
       const sub = ((window.SC_CATALOGO || {}).aliasSub || {})[e.subfactor_riesgo] || e.subfactor_riesgo;
@@ -4734,7 +4697,7 @@
       return `<tr><td class="px-3 py-2 font-semibold" style="min-width:170px">${esc(nombreDe(e))}</td>
        <td class="px-3 py-2 text-xs" style="min-width:180px">${esc(instCarrera)}</td>
        <td class="px-3 py-2 text-xs" style="min-width:150px">${esc(fac || '—')}</td>
-       <td class="px-3 py-2 text-xs" style="min-width:210px">${esc(fac && sub ? sub : '—')}</td>
+       <td class="px-3 py-2 text-xs" style="min-width:210px"${fac && sub ? ` title="${esc(sub)}"` : ''}>${esc(fac && sub ? subCortoD2(sub) : '—')}</td>
        <td class="px-3 py-2">${st ? `<span class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap" style="background:${st[1]};color:${st[2]}">${st[3]} ${st[0]}</span>` : '—'}</td>
        <td class="px-3 py-2 text-xs" style="min-width:260px">${esc((e.observaciones||'').trim() || '—')}</td></tr>`; }).join('')
       || `<tr><td colspan="6" class="p-6">${vacio('No hay casos prioritarios en acompañamiento psicológico con los filtros elegidos.')}</td></tr>`;
@@ -4788,16 +4751,14 @@
       <td class="px-3 py-2 align-top" style="min-width:170px">${esc(r.tipo || '—')}${propio ? '' : '<br><span class="text-[10px] font-bold uppercase tracking-wide" style="color:var(--ink-muted)">Registro de campo</span>'}</td>
       <td class="px-3 py-2 align-top" style="min-width:200px;white-space:pre-wrap">${esc((r.tema || '').trim() || '-')}</td>
       <td class="px-3 py-2 text-xs align-top" style="min-width:280px;white-space:pre-wrap">${esc((r.observaciones || '').trim() || '-')}</td>
-      <td class="px-3 py-2 text-center align-top whitespace-nowrap no-print">${propio
-        ? `<button type="button" data-d3-editar="${r.id}" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold">Editar</button> <button type="button" data-d3-eliminar="${r.id}" class="btn-danger rounded-lg px-3 py-1.5 text-xs font-semibold">Eliminar</button>`
-        : '<span class="text-[11px]" style="color:var(--ink-muted)">Se edita en<br>Intervención Comunitaria</span>'}</td></tr>`;
+      </tr>`;
   }
   function pintarMatrizD3(){
     const n = d3Lista.length, pags = Math.max(1, Math.ceil(n / D3_POR_PAG));
     d3Pag = Math.min(Math.max(1, d3Pag), pags);
     const vis = d3Todas ? d3Lista : d3Lista.slice((d3Pag - 1) * D3_POR_PAG, d3Pag * D3_POR_PAG);
     const html = (d3Edit === 'nuevo' ? filaEdicion(null) : '') + vis.map(r => (r.origen === 'matriz' && String(r.id) === String(d3Edit)) ? filaEdicion(r) : filaLectura(r)).join('');
-    $('d3Matriz').innerHTML = html || `<tr><td colspan="5" class="p-6">${vacio('Aún no hay registros. Usa "+ Agregar registro" para consignar la primera gestión o intervención.')}</td></tr>`;
+    $('d3Matriz').innerHTML = html || `<tr><td colspan="4" class="p-6">${vacio('Aún no hay registros en la matriz.')}</td></tr>`;
     $('d3Pager').classList.toggle('hidden', n <= D3_POR_PAG);
     $('d3PagInfo').textContent = `Página ${d3Pag} de ${pags} · ${n} registro(s)`;
     $('d3Prev').disabled = d3Pag <= 1; $('d3Next').disabled = d3Pag >= pags;
@@ -4827,6 +4788,7 @@
   const msgEd = (t) => { const m = $('d3EdMsg'); if (m) { m.textContent = t; m.classList.toggle('hidden', !t); } };
   $('d3BtnNuevo').addEventListener('click', () => { d3Edit = 'nuevo'; d3Pag = 1; pintarMatrizD3(); const el = $('d3EdInst'); if (el) el.focus(); });
   $('d3Matriz').addEventListener('click', async (ev) => {
+    if (SOLO_LECTURA) return;   // coordinación: sin edición ni eliminación
     const ed = ev.target.closest('[data-d3-editar]'), del = ev.target.closest('[data-d3-eliminar]');
     if (ev.target.closest('[data-d3-cancelar]')) { d3Edit = null; pintarMatrizD3(); return; }
     if (ed) { d3Edit = ed.dataset.d3Editar; pintarMatrizD3(); const el = $('d3EdTema'); if (el) el.focus(); return; }
@@ -4933,7 +4895,7 @@
     $('d3ChartWrap').classList.toggle('hidden', !tot); $('d3ChartVacio').classList.toggle('hidden', !!tot);
     dibujarIntervenciones(i);
     d3Lista = filasMatriz();
-    d3Pag = 1; pintarMatrizD3();
+    pintarMatrizD3();   // conserva la página actual cuando se refresca en tiempo real
   }
   $('d3Prev').addEventListener('click', () => { d3Pag--; pintarMatrizD3(); });
   $('d3Next').addEventListener('click', () => { d3Pag++; pintarMatrizD3(); });
@@ -4948,13 +4910,13 @@
     Object.values(charts).forEach(c => c.resize());
   }
   window.refrescarDashboards = () => cargarDatos();
-  window.abrirDashboards = async function(){
-    cambiarSeccionPrincipal('dashboards');
+  window.abrirDashboards = async function(seccion){
+    cambiarSeccionPrincipal(seccion === 'comunidad' ? 'comunidad' : 'dashboards');
     await cargarDatos();
   };
   [1,2,3,4].forEach(k => $('dashTab'+k).addEventListener('click', () => verPanel(k)));
   $('dfInst').addEventListener('change', renderTodo);
-  $('btnDashboards').addEventListener('click', window.abrirDashboards);
+  $('btnDashboards').addEventListener('click', () => window.abrirDashboards('dashboards'));
   $('dashRefrescar').addEventListener('click', cargarDatos);
   // Tiempo real: si Supabase Realtime está activo en `estudiantes`, los cambios de otros perfiles/sesiones refrescan el Dashboard abierto
   try {
@@ -5241,279 +5203,72 @@
 })();
 </script>
 
+
+
+
 <script>
 // ============================================================================
-// MÓDULO ADMIN — reportes, resumen ejecutivo, auditoría de documentos y accesos rápidos
+// COORDINACIÓN · SINCRONIZACIÓN EN TIEMPO REAL CON LA PLATAFORMA PRINCIPAL
+// Misma base de datos (Supabase). Cada tabla tiene su propio canal para que una tabla sin Realtime no afecte a las demás.
+// Si Realtime no está activo en alguna tabla, el sondeo cada 30 s mantiene todo al día.
 // ============================================================================
 (function(){
   const $ = (id) => document.getElementById(id);
-  const esc = (s) => escHtml(s);
-  const GRUPOS = [
-    { k:'act', t:'Matriculados / Activos',        c:'#2F7D5B' },
-    { k:'egr', t:'Egresados / Titulados',         c:'#7A68A8' },
-    { k:'pau', t:'Pausa Académica',               c:'#2F80C9' },
-    { k:'sus', t:'Suspensión Temporal',           c:'#E8871E' },
-    { k:'baj', t:'Retiro Voluntario / Deserción', c:'#C0504D' } ];
-  const BAJAS = ['Retiro voluntario','Deserción','Abandono Definitivo','Retiro Formal','Renuncia Voluntaria Inicial'];
-  const grupoDe = (e) => {
-    const a = e.estado_academico || '';
-    if (a === 'Egresado') return 'egr';
-    if (/pausa/i.test(a)) return 'pau';
-    if (/suspens|suspendid/i.test(a)) return 'sus';
-    if (BAJAS.includes(a)) return 'baj';
-    return 'act';
+  const esperas = {};
+  const diferir = (k, fn, ms) => { clearTimeout(esperas[k]); esperas[k] = setTimeout(() => { try { fn(); } catch (e) { console.warn(e); } }, ms || 600); };
+  const dashVisible = () => !$('seccionDashboards').classList.contains('hidden');
+  const perfilAbierto = () => !$('vistaPerfil').classList.contains('hidden') && !!estudianteActivo;
+
+  async function refrescarPerfil(){
+    if (!perfilAbierto()) return;
+    const dni = estudianteActivo.dni;
+    const { data, error } = await supabaseClient.from('estudiantes').select('*').eq('dni', dni).maybeSingle();
+    if (error || !perfilAbierto() || estudianteActivo.dni !== dni) return;
+    if (!data) { $('btnVolverLista').click(); return; }          // el estudiante fue eliminado en la plataforma principal
+    estudianteActivo = data;
+    $('perfilNombre').textContent = `${data.apellidos} ${data.nombres}`;
+    $('perfilEdad').textContent = `${calcularEdad(data.fecha_nacimiento)} años`;
+    $('perfilDni').textContent = data.dni;
+    $('perfilInstitucion').textContent = data.institucion;
+    $('perfilCarrera').textContent = data.carrera || '—';
+    $('perfilCiclo').textContent = data.ciclo || '—';
+    $('perfilEstadoActual').value = normalizarEstado(data.estado_actual);
+    $('perfilObservaciones').value = data.observaciones || '';
+    actualizarBadgesPerfil();
+    if (window.rendRecalcularRiesgo) window.rendRecalcularRiesgo();
+  }
+  async function refrescarDocumentos(){
+    if (!perfilAbierto()) return;
+    await Promise.all([cargarSesiones(), cargarInformes()]);
+    await cargarDocumentos();
+  }
+  const refrescarDash = () => { if (dashVisible() && window.refrescarDashboards) window.refrescarDashboards(); };
+
+  const ACCIONES = {
+    estudiantes:                  () => { cargarEstudiantes(); refrescarPerfil(); refrescarDash(); },
+    notas_academicas:             () => { refrescarDash(); if (perfilAbierto() && window.rendRecalcularRiesgo) window.rendRecalcularRiesgo(); },
+    reportes_sesion:              refrescarDocumentos,
+    informes_psicologicos:        refrescarDocumentos,
+    documentos_estudiante:        refrescarDocumentos,
+    intervenciones_comunitarias:  refrescarDash,
+    matriz_gestion_comunitaria:   refrescarDash,
+    kpi_ajustes_dashboard:        refrescarDash,
   };
-  const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
-  const nombreDe = (e) => `${e.apellidos || ''}, ${e.nombres || ''}`.trim();
-  const icono = (paths) => `<span class="perfil-icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg></span>`;
-  const ICO = {
-    firma:  '<path d="M4 20h4L18.5 9.5a2.121 2.121 0 0 0-3-3L5 17v3z"/>',
-    pin:    '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-    bd:     '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>',
-    fechas: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
-    com:    '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>' };
-
-  let A = { est:[], docs:[], ses:[], inf:[], notas:[], nCampo:0, nMatriz:0, errDocs:false, errNotas:'' };
-  let filtroMx = 'todos', busquedaMx = '';
-  let filtro = 'todos', busqueda = '', chart = null, ocupado = false;
-
-  // Notas académicas de todos los becarios (paginadas: Supabase devuelve máx. 1000 filas por consulta)
-  async function leerNotas(){
-    let out = [], desde = 0; const paso = 1000;
-    for (;;) {
-      const { data, error } = await supabaseClient.from('notas_academicas').select('estudiante_dni,semestre,curso,nota,observacion,estado').order('id').range(desde, desde + paso - 1);
-      if (error) return { data:out, error };
-      out = out.concat(data || []);
-      if (!data || data.length < paso) return { data:out, error:null };
-      desde += paso;
-    }
-  }
-
-  // ---------- Carga de datos (solo conteos; nunca se descarga el contenido de los PDF) ----------
-  const COLS_EST_ADM = 'dni,apellidos,nombres,institucion,estado_academico,factor_riesgo_principal,estado_caso,impacto_psicoemocional,nivel_riesgo_psicologico';
-  async function cargar(){
-    const q = (t, c) => supabaseClient.from(t).select(c);
-    const r = await Promise.all([
-      q('estudiantes', COLS_EST_ADM + ',subfactor_riesgo,riesgo_perdida_beca'),
-      q('documentos_estudiante', 'id,dni_estudiante,tipo'),
-      q('reportes_sesion', 'dni_estudiante'),
-      q('informes_psicologicos', 'dni_estudiante'),
-      q('intervenciones_comunitarias', 'id'),
-      q('matriz_gestion_comunitaria', 'id'),
-      leerNotas() ]);
-    if (r[0].error && /riesgo_perdida_beca|subfactor_riesgo|column/i.test(r[0].error.message || '')) r[0] = await q('estudiantes', COLS_EST_ADM);   // aún no se ejecutó el SQL de la matriz de alertas tempranas
-    const av = $('admAviso');
-    av.textContent = r[0].error ? 'No se pudieron cargar los becarios: ' + r[0].error.message : '';
-    av.classList.toggle('hidden', !r[0].error);
-    A.est = (r[0].data || []).map(e => ({ ...e, estado_academico: normalizarAcademico(e.estado_academico) }));
-    A.docs = r[1].data || []; A.errDocs = !!r[1].error;
-    A.ses = r[2].data || []; A.inf = r[3].data || [];
-    A.nCampo = (r[4].data || []).length; A.nMatriz = (r[5].data || []).length;
-    A.notas = r[6].data || []; A.errNotas = r[6].error ? r[6].error.message : '';
-  }
-
-  // ---------- KPIs + gráfico consolidado ----------
-  const kpi = (t, v, d, c) => `<div class="card rounded-[18px] p-5"><p class="text-xs font-bold uppercase tracking-[.08em]" style="color:var(--ink-muted)">${t}</p>
-    <p class="font-display text-3xl font-extrabold mt-1" style="color:${c || 'var(--ink)'}">${v}</p><p class="text-xs mt-1" style="color:var(--ink-muted)">${d || ''}</p></div>`;
-
-  function filasAuditoria(){
-    const cnt = (arr) => arr.reduce((m, r) => { const k = String(r.dni_estudiante); m[k] = (m[k] || 0) + 1; return m; }, {});
-    const pdf = cnt(A.docs), ses = cnt(A.ses), inf = cnt(A.inf);
-    return A.est.map(e => { const k = String(e.dni), p = pdf[k] || 0, s = ses[k] || 0, i = inf[k] || 0; return { e, p, s, i, total:p + s + i }; })
-      .sort((a, b) => ((a.total > 0) - (b.total > 0)) || nombreDe(a.e).localeCompare(nombreDe(b.e), 'es', { sensitivity:'base' }));
-  }
-
-  function pintarResumen(){
-    const total = A.est.length, cuentas = GRUPOS.map(g => A.est.filter(e => grupoDe(e) === g.k).length);
-    const casos = A.est.filter(e => e.factor_riesgo_principal && ['atencion', 'evolucion'].includes(scNormEstado(e.estado_caso))).length;
-    const aud = filasAuditoria(), con = aud.filter(r => r.total > 0).length;
-    $('admKpis').innerHTML =
-      kpi('Becarios registrados', total, `${cuentas[0]} activos · ${cuentas[1]} egresados`, 'var(--primary)') +
-      kpi('Casos en acompañamiento', casos, 'En atención o con evolución favorable', '#C0504D') +
-      kpi('Intervenciones registradas', A.nCampo + A.nMatriz, 'Comunitarias e institucionales', '#7A68A8') +
-      kpi('Expedientes con documentos', `${con} / ${total}`, `${pct(con, total)}% de los becarios`, '#2F7D5B');
-
-    $('admLeyenda').innerHTML = total ? `<div style="border:1px solid var(--border);border-radius:10px;padding:7px 10px;background:var(--surface-alt)">
-      ${GRUPOS.map((g, i) => `<div style="display:flex;align-items:center;gap:6px;padding:3px 0">
-        <span style="flex:none;width:9px;height:9px;border-radius:3px;background:${g.c}"></span>
-        <span style="flex:1;min-width:0;font-size:11px;line-height:1.2">${esc(g.t)}</span>
-        <span style="flex:none;font-size:11px;color:var(--ink-muted);white-space:nowrap"><strong style="color:var(--ink)">${cuentas[i]}</strong> · ${pct(cuentas[i], total)}%</span></div>`).join('')}
-      <div style="display:flex;justify-content:space-between;margin-top:4px;padding-top:5px;border-top:1px solid var(--border);font-size:11px"><strong>Total</strong><strong>${total}</strong></div></div>`
-      : '<p class="perfil-sub">Aún no hay becarios registrados.</p>';
-
-    if (chart) { chart.destroy(); chart = null; }
-    const cv = $('chAdminEstado'); if (!cv || !total) return;
-    const centro = { id:'admCentro', afterDraw(ch){
-      const a = ch.chartArea, x = (a.left + a.right) / 2, y = (a.top + a.bottom) / 2, c = ch.ctx;
-      c.save(); c.textAlign = 'center'; c.textBaseline = 'middle';
-      c.fillStyle = '#16212B'; c.font = '800 32px "Plus Jakarta Sans", sans-serif'; c.fillText(String(total), x, y - 9);
-      c.fillStyle = '#5B6B75'; c.font = '600 12px Inter, sans-serif'; c.fillText('becarios', x, y + 16); c.restore(); } };
-    chart = new Chart(cv.getContext('2d'), { type:'doughnut',
-      data:{ labels:GRUPOS.map(g => g.t), datasets:[{ data:cuentas, backgroundColor:GRUPOS.map(g => g.c), borderColor:'#fff', borderWidth:3, hoverOffset:6 }] },
-      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
-        plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:(c) => ` ${c.label}: ${c.raw} becario(s) · ${pct(c.raw, total)}%` } } } },
-      plugins:[centro] });
-  }
-
-  // ---------- Auditoría de documentos ----------
-  function pintarAuditoria(){
-    const todas = filasAuditoria(), con = todas.filter(r => r.total > 0).length, pen = todas.length - con;
-    $('admAudResumen').innerHTML =
-      `<span class="adm-pill" style="background:var(--success-soft);color:var(--success)">✔ Con documentos: ${con}</span>` +
-      `<span class="adm-pill" style="background:#FCF3DA;color:#8A6212">● Pendientes: ${pen}</span>`;
-    $('admAudBarra').style.width = pct(con, todas.length) + '%';
-    const nota = $('admAudNota');
-    nota.textContent = A.errDocs ? 'No se pudo leer la tabla de documentos adjuntos (documentos_estudiante): solo se consideran los reportes e informes redactados en el portal.' : '';
-    nota.classList.toggle('hidden', !A.errDocs);
-    const q = busqueda.trim().toLowerCase();
-    const filas = todas.filter(r => (filtro === 'todos' || (filtro === 'con') === (r.total > 0)) && (!q || `${nombreDe(r.e)} ${r.e.dni}`.toLowerCase().includes(q)));
-    const num = (n) => n ? `<strong>${n}</strong>` : '<span style="color:var(--ink-muted)">—</span>';
-    $('admAudTabla').innerHTML = filas.map(r => `<tr>
-      <td class="px-3 py-2"><button type="button" class="font-semibold text-[var(--primary)] hover:underline text-left" data-adm-perfil="${esc(r.e.dni)}">${esc(nombreDe(r.e))}</button></td>
-      <td class="px-3 py-2 text-xs">${esc(r.e.institucion || '—')}</td>
-      <td class="px-3 py-2 text-center">${num(r.p)}</td><td class="px-3 py-2 text-center">${num(r.s)}</td><td class="px-3 py-2 text-center">${num(r.i)}</td>
-      <td class="px-3 py-2">${r.total > 0
-        ? '<span class="badge" style="background:var(--success-soft);color:var(--success)">Con documentos</span>'
-        : '<span class="badge" style="background:#FCF3DA;color:#8A6212">Pendiente</span>'}</td></tr>`).join('');
-    $('admAudVacio').classList.toggle('hidden', filas.length > 0);
-  }
-  $('admAudFiltros').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-adm-f]'); if (!b) return;
-    filtro = b.dataset.admF;
-    $('admAudFiltros').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
-    pintarAuditoria();
-  });
-  $('admAudBuscar').addEventListener('input', (ev) => { busqueda = ev.target.value; pintarAuditoria(); });
-  $('admAudTabla').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-adm-perfil]'); if (!b) return;
-    cambiarSeccionPrincipal('estudiantes'); abrirPerfil(b.dataset.admPerfil);
-  });
-
-  // ---------- Matriz de Alertas Preventivas (misma función de riesgo que el semáforo del perfil) ----------
-  const NIV = {
-    rojo:     { ord:0, emo:'🔴', txt:'Riesgo Alto',  css:'background:rgba(192,80,77,.16);color:#9B3532' },
-    amarillo: { ord:1, emo:'🟡', txt:'Riesgo Medio', css:'background:rgba(217,164,65,.22);color:#8A6414' },
-    verde:    { ord:2, emo:'🟢', txt:'Riesgo Bajo',  css:'background:rgba(47,125,91,.14);color:#1F6445' },
-    sin:      { ord:3, emo:'⚪', txt:'Sin datos',    css:'background:rgba(154,168,176,.2);color:#5C6A73' } };
-  const PSI = { alto:'🔴 Alto / Crítico', medio:'🟡 Preventiva', bajo:'🟢 Bajo / resuelto', sin:'—' };
-  function filasMatriz(){
-    const por = {}; A.notas.forEach(n => { const k = String(n.estudiante_dni); (por[k] = por[k] || []).push(n); });
-    return A.est.filter(e => ['act', 'pau', 'sus'].includes(grupoDe(e)))   // se excluyen egresados y bajas
-      .map(e => ({ e, r:window.rendEvaluarRiesgo(e, por[String(e.dni)] || []) }))
-      .sort((a, b) => NIV[a.r.nivel].ord - NIV[b.r.nivel].ord || b.r.graves - a.r.graves
-        || (a.r.prom == null) - (b.r.prom == null) || (a.r.prom || 0) - (b.r.prom || 0)
-        || nombreDe(a.e).localeCompare(nombreDe(b.e), 'es', { sensitivity:'base' }));
-  }
-  function pintarMatriz(){
-    const todas = filasMatriz();
-    const n = (k) => todas.filter(x => x.r.nivel === k).length;
-    $('admMxResumen').innerHTML = ['rojo', 'amarillo', 'verde'].map(k => `<span class="adm-pill" style="${NIV[k].css}">${NIV[k].emo} ${NIV[k].txt.replace('Riesgo ', '')}: ${n(k)}</span>`).join('') +
-      (n('sin') ? `<span class="adm-pill" style="${NIV.sin.css}">${NIV.sin.emo} Sin datos: ${n('sin')}</span>` : '');
-    const nota = $('admMxNota');
-    nota.textContent = A.errNotas ? 'No se pudo leer la tabla de notas (notas_academicas): la Variable A no está disponible. ' + A.errNotas : '';
-    nota.classList.toggle('hidden', !A.errNotas);
-    const q = busquedaMx.trim().toLowerCase();
-    const filas = todas.filter(x => (filtroMx === 'todos' || x.r.nivel === filtroMx) && (!q || `${nombreDe(x.e)} ${x.e.dni}`.toLowerCase().includes(q)));
-    $('admMxTabla').innerHTML = filas.map(({ e, r }) => {
-      const u = NIV[r.nivel], det = r.nivel === 'sin' ? 'Sin notas cargadas ni caso psicológico registrado' : `${u.txt}: ${r.motivos.join(' + ')}`;
-      return `<tr>
-        <td class="px-3 py-2"><button type="button" class="font-semibold text-[var(--primary)] hover:underline text-left" data-mx-perfil="${esc(e.dni)}">${esc(nombreDe(e))}</button></td>
-        <td class="px-3 py-2 text-xs">${esc(e.institucion || '—')}</td>
-        <td class="px-3 py-2 text-center">${r.prom == null ? '<span style="color:var(--ink-muted)">—</span>' : `<strong>${String(Number(r.prom.toFixed(2))).replace('.', ',')}</strong><span class="block text-[10px]" style="color:var(--ink-muted)">${esc(r.sem)}</span>`}</td>
-        <td class="px-3 py-2 text-center">${r.desap ? `<strong style="color:#9B3532">${r.desap}</strong>` : '<span style="color:var(--ink-muted)">0</span>'}</td>
-        <td class="px-3 py-2 text-xs">${PSI[r.psico]}</td>
-        <td class="px-3 py-2"><span class="badge" style="${u.css};cursor:help" title="${esc(det)}" aria-label="${esc(det)}">${u.emo} ${u.txt}</span></td>
-        <td class="px-3 py-2 text-center"><button type="button" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold" data-mx-perfil="${esc(e.dni)}">Ver perfil →</button></td></tr>`;
-    }).join('');
-    $('admMxVacio').classList.toggle('hidden', filas.length > 0);
-  }
-  $('admMxFiltros').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-mx-f]'); if (!b) return;
-    filtroMx = b.dataset.mxF;
-    $('admMxFiltros').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
-    pintarMatriz();
-  });
-  $('admMxBuscar').addEventListener('input', (ev) => { busquedaMx = ev.target.value; pintarMatriz(); });
-  $('admMxTabla').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-mx-perfil]'); if (!b) return;
-    cambiarSeccionPrincipal('estudiantes'); abrirPerfil(b.dataset.mxPerfil);
-  });
-
-  // ---------- Accesos rápidos ----------
-  function pintarAccesos(){
-    const col = (typeof obtenerColegiatura === 'function') ? obtenerColegiatura() : '';
-    const abierto = (typeof spDesbloqueado === 'function') ? spDesbloqueado() : false;
-    const fila = (id, ico, t, d, go, estatico) => `<${estatico ? 'div' : 'button type="button"'} class="adm-quick${estatico ? ' adm-static' : ''}" ${estatico ? '' : `data-adm-acc="${id}"`}>
-      ${icono(ico)}<span class="adm-txt"><strong>${t}</strong><span>${d}</span></span>${go ? `<span class="adm-go" ${estatico ? `data-adm-acc="${id}" style="cursor:pointer"` : ''}>${go}</span>` : ''}</${estatico ? 'div' : 'button'}>`;
-    $('admAccesos').innerHTML =
-      fila('firma', ICO.firma, 'Firma profesional', col ? `N.º de colegiatura CPsP ${esc(col)}` : 'Sin N.º de colegiatura registrado', 'Configurar') +
-      fila('pin', ICO.pin, 'Seguimiento psicológico protegido', abierto ? 'Desbloqueado en esta sesión' : 'Bloqueado con PIN', abierto ? 'Bloquear ahora' : '', true) +
-      fila('bd', ICO.bd, 'Base de datos de becarios', 'Descarga el consolidado en PDF', 'Descargar') +
-      fila('fechas', ICO.fechas, 'Reporte de atenciones por fechas', 'Consulta las sesiones de un rango de fechas', 'Abrir') +
-      fila('com', ICO.com, 'Intervención comunitaria', 'Registro de acciones de campo', 'Abrir');
-  }
-  $('admAccesos').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-adm-acc]'); if (!b) return;
-    const a = b.dataset.admAcc;
-    if (a === 'firma') $('btnFirmaProfesional').click();
-    else if (a === 'pin') { const x = document.querySelector('[data-sp-bloquear]'); if (x) x.click(); pintarAccesos(); }
-    else if (a === 'bd') $('btnDescargarBD').click();
-    else if (a === 'fechas') cambiarSeccionPrincipal('reportes');
-    else if (a === 'com') $('navComunidad').click();
-  });
-  $('formFirma').addEventListener('submit', () => setTimeout(pintarAccesos, 0));
-
-  // ---------- Reportes PDF (reutilizan el generador del Dashboard) ----------
-  async function generar(modo, seccion, btn){
-    if (ocupado) return;
-    ocupado = true;
+  Object.keys(ACCIONES).forEach(tabla => {
     try {
-      const textoPrevio = btn.innerHTML;
-      btn.disabled = true; btn.textContent = 'Preparando datos…';
-      try { await window.refrescarDashboards(); } catch (err) { console.warn('No se pudieron refrescar los datos del Dashboard:', err); }
-      btn.disabled = false; btn.innerHTML = textoPrevio;
-      await window.dashGenerarPDF(modo, btn, seccion);
-    } finally { ocupado = false; }
-  }
-  $('admPdfGeneral').addEventListener('click', (ev) => generar('general', null, ev.currentTarget));
-  [1, 2, 3].forEach(n => $('admPdf' + n).addEventListener('click', (ev) => generar('actual', n, ev.currentTarget)));
+      supabaseClient.channel('coord-' + tabla)
+        .on('postgres_changes', { event: '*', schema: 'public', table: tabla }, () => diferir(tabla, ACCIONES[tabla]))
+        .subscribe();
+    } catch (err) { console.warn('Realtime no disponible para ' + tabla + ':', err.message); }
+  });
 
-  // ---------- Apertura del módulo ----------
-  async function abrirAdmin(){
-    cambiarSeccionPrincipal('admin');
-    pintarAccesos();
-    await cargar();
-    pintarResumen(); pintarMatriz(); pintarAuditoria();
-  }
-  $('btnAdmin').addEventListener('click', abrirAdmin);
-  $('admRefrescar').addEventListener('click', abrirAdmin);
-})();
-</script>
+  // Respaldo: sondeo cada 30 s (solo con la pestaña visible) y al volver a la pestaña
+  function sincronizarTodo(){ cargarEstudiantes(); refrescarPerfil(); refrescarDocumentos(); refrescarDash(); }
+  setInterval(() => { if (!document.hidden) sincronizarTodo(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) diferir('vis', sincronizarTodo, 300); });
 
-
-<script>
-// ============================================================================
-// MODO COORDINACIÓN Y SUPERVISIÓN — consulta / solo lectura administrativa
-// ============================================================================
-(function(){
-  const $ = (id) => document.getElementById(id);
-  // El área clínica nunca se desbloquea en esta vista (no hay PIN): no se consulta la bitácora privada
-  window.spDesbloqueado = function(){ return false; };
-  // Estado y observación del perfil: solo lectura
-  ['perfilEstadoActual', 'perfilObservaciones'].forEach(id => { const n = $(id); if (n) n.disabled = true; });
-  // Firma profesional: sin guardado
-  const ff = $('formFirma');
-  if (ff) ff.addEventListener('submit', (ev) => { ev.preventDefault(); ev.stopImmediatePropagation(); }, true);
-  // Tabla de estudiantes: los desplegables en línea quedan inhabilitados
-  const tb = $('tablaEstudiantes');
-  const bloquearSelects = () => tb.querySelectorAll('select:not(:disabled)').forEach(x => { x.disabled = true; });
-  if (tb) { new MutationObserver(bloquearSelects).observe(tb, { childList:true }); bloquearSelects(); }
-  // Al abrir un perfil se cargan solo los PDF cargados (documentos adjuntos), sin bitácora clínica
-  const abrirOriginal = window.abrirPerfil;
-  window.abrirPerfil = async function(dni){
-    await abrirOriginal(dni);
-    try { await cargarDocumentos(); } catch (err) { console.warn('Documentos no disponibles:', err); }
-  };
+  // Arranque: la plataforma de coordinación abre en el Dashboard
+  window.abrirDashboards('dashboards');
 })();
 </script>
 </body>
