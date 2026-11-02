@@ -572,7 +572,18 @@
   .pdf-reporte .mx-reglas{ grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:6px !important; }
   .pdf-reporte .mx-reglas > div{ font-size:8.5px; padding:5px 7px; }
   .mx-der{ display:flex; flex-direction:column; min-width:0; }
-  .mx-scroll{ max-height:330px; overflow-y:auto; border:1px solid var(--border); border-radius:12px; }
+  .mx-scroll{ max-height:330px; overflow-y:auto; overflow-x:auto; border:1px solid var(--border); border-radius:12px; }
+  /* Tabla ejecutiva compacta: columnas de ancho fijo y homogéneo, padding cómodo y bordes finos */
+  .mx-tabla{ table-layout:fixed; width:100%; min-width:700px; font-size:12.5px; }
+  .mx-tabla thead th{ padding:10px 12px; text-align:left; font-size:11.5px; font-weight:700; letter-spacing:.01em; text-transform:none; color:var(--ink-muted); border-bottom:1px solid var(--border); white-space:nowrap; }
+  .mx-tabla tbody td{ padding:10px 12px; vertical-align:middle; border-bottom:1px solid var(--border); line-height:1.35; }
+  .mx-tabla tbody tr:last-child td{ border-bottom:0; }
+  .mx-tabla tbody tr:nth-child(even) td{ background:rgba(154,168,176,.07); }
+  .mx-tabla .mx-c{ text-align:center; }
+  .mx-tabla .mx-nom{ display:block; font-weight:700; color:var(--ink); }
+  .mx-tabla .mx-sub{ display:block; font-size:11px; color:var(--ink-muted); margin-top:1px; }
+  .mx-tabla .mx-est{ display:flex; align-items:flex-start; gap:6px; font-size:12px; line-height:1.3; color:var(--ink); }
+  .mx-tabla .mx-est > span:first-child{ flex:none; line-height:1.3; }
   .mx-scroll table{ border-collapse:separate; border-spacing:0; }
   .mx-scroll thead th{ position:sticky; top:0; z-index:1; background:var(--surface-alt); }
   .pdf-reporte .mx-grid{ grid-template-columns:minmax(0,2fr) minmax(0,3fr) !important; gap:14px !important; }
@@ -873,7 +884,7 @@
             <label class="flex items-start gap-2 mt-4 text-sm cursor-pointer" for="scPerdidaBeca">
               <input id="scPerdidaBeca" type="checkbox" class="mt-1" style="width:16px;height:16px">
               <span><strong>Riesgo inminente de perder la beca</strong><span class="block perfil-sub" style="margin:0">Marca al becario como 🔴 Riesgo Alto en la Matriz de Alertas Tempranas, sin importar sus cursos desaprobados.</span></span></label>
-            <p class="perfil-sub mt-2">Al registrar un factor, el caso se considera detectado y entra al acumulado del programa. En el Dashboard, el becario se cuenta una sola vez en el grupo de su Factor Principal, en la barra de su Estado del Caso: amarillo (En Atención), azul (Evolución Favorable), verde (Resuelto / Alta) o rojo (Abandono del Soporte Psicológico).</p>
+            <p class="perfil-sub mt-2">Al registrar un factor, el caso se considera detectado y entra al acumulado del programa. En el Dashboard, el becario se cuenta una sola vez en el grupo de su Factor Principal, en la barra de su Estado del Caso: amarillo (En Atención), azul (Evolución Favorable), verde (Resuelto / Alta), rojo (Abandono del Soporte Psicológico) o violeta (Monitoreo general / Seguimiento preventivo). Si el becario está estable, deja los Niveles 1, 2 y 3 vacíos y elige en el Nivel 4 «Monitoreo general / Seguimiento preventivo»: se cuenta en el Dashboard, pero no aparece en el Cuadro de Resumen Mensual.</p>
 
             <button id="btnGuardarSeguimientoClinico" type="button" class="btn-primary w-full rounded-xl px-4 py-2.5 text-sm font-semibold mt-4">Guardar seguimiento</button>
             <p id="scMsg" class="perfil-sub mt-2 hidden"></p>
@@ -1195,7 +1206,7 @@
       <div id="d2Kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
       <div class="card rounded-[18px] px-5 py-4 mb-4 modulo-cabecera" style="border-left:5px solid var(--primary)"><h2 class="modulo-titulo">Evolución y Seguimiento de Alertas</h2></div>
       <div class="card rounded-[18px] p-5 mb-6"><h3 class="perfil-card-title mb-3">Estado y Evolución de Casos de Riesgo</h3>
-        <div style="height:380px;max-width:560px;margin:0 auto"><canvas id="chEvolucion"></canvas></div><p id="d2RadarResumen" class="perfil-sub text-center mt-3"></p><p id="d2RadarVacio" class="perfil-sub text-center mt-2 hidden">Aún no hay casos con Factor de Riesgo Principal registrado con los filtros elegidos.</p></div>
+        <div style="height:380px;max-width:560px;margin:0 auto"><canvas id="chEvolucion"></canvas></div><p id="d2RadarVacio" class="perfil-sub text-center mt-2 hidden">Aún no hay casos con Factor de Riesgo Principal registrado con los filtros elegidos.</p></div>
       <div class="card rounded-[18px] p-5"><h3 class="perfil-card-title mb-3">Registro Descriptivo de Casos en Acompañamiento</h3>
         <div style="overflow-x:auto"><table class="w-full text-sm"><thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
           <th class="px-3 py-2">Becario</th><th class="px-3 py-2">Institución / Carrera</th><th class="px-3 py-2">Factor Principal</th><th class="px-3 py-2">Subfactor</th><th class="px-3 py-2">Estado del Caso</th><th class="px-3 py-2">Detalle / Observaciones</th></tr></thead>
@@ -1256,9 +1267,11 @@
               <span id="d1MxConteo" class="text-xs" style="color:var(--ink-muted)"></span>
             </div>
             <div class="mx-scroll">
-              <table class="w-full text-sm"><thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
-                <th class="px-3 py-2">Becario</th><th class="px-3 py-2">Carrera / Institución</th><th class="px-3 py-2 text-center">Cursos Desaprobados</th><th class="px-3 py-2">Estado Clínico (Nivel 4)</th><th class="px-3 py-2">Nivel de Riesgo</th><th class="px-3 py-2 text-center no-print">Perfil</th></tr></thead>
-                <tbody id="d1MxTabla" class="divide-y" style="border-color:var(--border)"></tbody></table>
+              <table class="mx-tabla">
+                <colgroup><col style="width:150px"><col style="width:160px"><col style="width:90px"><col style="width:140px"><col style="width:110px"><col class="no-print" style="width:100px"></colgroup>
+                <thead><tr>
+                <th>Becario</th><th>Carrera e Institución</th><th class="mx-c">Cursos desaprobados</th><th>Estado clínico</th><th>Nivel de riesgo</th><th class="mx-c no-print">Perfil</th></tr></thead>
+                <tbody id="d1MxTabla"></tbody></table>
               <div id="d1MxVacio" class="empty-state hidden" style="border:0"></div>
             </div>
           </div>
@@ -1297,6 +1310,36 @@
           <button id="admPdf1" type="button" class="adm-quick js-pdf-btn"><span class="perfil-icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><span class="adm-txt"><strong>Gestión Académica y Empleabilidad</strong><span>Estado académico, rendimiento y situación laboral</span></span><span class="adm-go">PDF ↓</span></button>
           <button id="admPdf2" type="button" class="adm-quick js-pdf-btn"><span class="perfil-icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><span class="adm-txt"><strong>Acompañamiento Psicológico</strong><span>Evolución y seguimiento de alertas</span></span><span class="adm-go">PDF ↓</span></button>
           <button id="admPdf3" type="button" class="adm-quick js-pdf-btn"><span class="perfil-icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><span class="adm-txt"><strong>Trabajo Comunitario e Institucional</strong><span>Intervenciones comunitarias e institucionales</span></span><span class="adm-go">PDF ↓</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- A2) Cuadro de Resumen Mensual -->
+    <div class="card rounded-[22px] p-5 mb-6" id="admResumenMensual">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 class="perfil-card-title">Cuadro de Resumen Mensual</h3>
+          <p class="perfil-sub mt-0.5">Consolida a los becarios con caso activo, en seguimiento o con factores de Salud Física registrados: carrera, lugar de estudio, factor y subfactor principal, estado del caso (Nivel 4) y observación o impacto actual. No incluye casos resueltos de otros factores ni a los becarios estables que solo tienen el Nivel 4 en Monitoreo general / Seguimiento preventivo (sin factores registrados).</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="admRmMes" aria-label="Mes del reporte" class="rounded-xl px-3 py-2.5 text-sm font-semibold min-w-[170px]"></select>
+          <button id="admRmGenerar" type="button" class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Generar Cuadro de Resumen Mensual</button>
+          <button id="admRmPdf" type="button" class="btn-ghost rounded-xl px-4 py-2.5 text-sm font-semibold hidden">Descargar PDF ↓</button>
+        </div>
+      </div>
+      <p id="admRmMsg" class="hidden text-sm mt-3 font-semibold"></p>
+      <div id="admRmResultado" class="hidden mt-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <p id="admRmTitulo" class="font-display text-base font-extrabold"></p>
+          <div id="admRmResumen" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="adm-aud-wrap" style="max-height:520px">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-xs uppercase" style="color:var(--ink-muted)">
+              <th>Apellidos y Nombres</th><th>Carrera</th><th>Lugar de Estudio (Institución / Sede)</th><th>Factor y Subfactor Principal</th><th>Estado del Caso / Atención Psicológica</th><th>Observación / Impacto Actual</th></tr></thead>
+            <tbody id="admRmTabla" class="divide-y" style="border-color:var(--border)"></tbody>
+          </table>
+          <p id="admRmVacio" class="hidden text-center text-sm text-[var(--ink-muted)] py-8">No hay becarios con caso activo, de seguimiento o con factores de Salud Física registrados.</p>
         </div>
       </div>
     </div>
@@ -2879,7 +2922,7 @@
   // Catálogo único: lo usan los selectores del perfil y los ejes del radar del Dashboard 2
   window.SC_CATALOGO = {
     factores: [
-      { t:'Salud Física', subs:['Gestación, maternidad o periodo de lactancia', 'Diagnóstico médico / Enfermedad (Anemia, gastritis, patología aguda/crónica)', 'Descanso médico o reposo prolongado', 'Pausa académica formal por motivos de salud'] },
+      { t:'Salud Física', subs:['Gestación, maternidad y periodo de lactancia', 'Diagnóstico médico / enfermedad crónica o aguda (gastritis, anemia, patología aguda/crónica, etc.)', 'Descanso médico, reposo prolongado o incapacidad temporal', 'Pausa académica formal o ajuste de carga por motivos de salud'] },
       { t:'Factores Psicosociales', subs:['Sintomatología de estrés y ansiedad', 'Dificultades en relaciones afectivas / Ruptura sentimental', 'Dificultades en regulación emocional y resiliencia', 'Aislamiento social o red de apoyo limitada', 'Hábitos de vida y autocuidado desadaptativos'] },
       { t:'Factores Académicos', subs:['Sobrecarga académica y de evaluación', 'Ansiedad por rendimiento y exigencia de notas', 'Historial de desaprobación / Riesgo de pérdida de beca', 'Dificultades en orientación o tutoría académica', 'Incongruencia vocacional / Duda con la carrera'] },
       { t:'Factores Socioeconómicos', subs:['Dificultades de financiamiento y manutención', 'Conflictos de tiempo entre estudio y trabajo', 'Dificultades de adaptación al cambio de residencia / ciudad', 'Inestabilidad e imprevistos económicos'] },
@@ -2887,14 +2930,65 @@
     ],
     // Nombres de la versión anterior -> nombre vigente (los perfiles ya guardados se leen sin perder el dato)
     alias:    { 'Salud Física y Gestación':'Salud Física', 'Factores Académicos e Institucionales':'Factores Académicos','Factores Psicosociales y Personales':'Factores Psicosociales', 'Factores Socioeconómicos y del Entorno':'Factores Socioeconómicos', 'Factores Familiares y del Entorno Hogar':'Factores Familiares' },
-    aliasSub: { 'Gestación, maternidad / lactancia y monitoreo de salud':'Gestación, maternidad o periodo de lactancia', 'Condición médica temporal o reposo/descanso médico':'Descanso médico o reposo prolongado', 'Pausa académica formal por salud / reserva de matrícula':'Pausa académica formal por motivos de salud', 'Dificultades de autorregulación emocional y resiliencia':'Dificultades en regulación emocional y resiliencia', 'Aislamiento social y escasa red de apoyo':'Aislamiento social o red de apoyo limitada', 'Estilos de vida y hábitos desadaptativos':'Hábitos de vida y autocuidado desadaptativos' },
-    impactos: ['Estrés o sobrecarga emocional derivada del factor', 'Dificultad de adaptación o interferencia en el rendimiento académico', 'Afectación económica o familiar asociada', 'Sin afectación emocional significativa / Estado estable'],
+    aliasSub: { 'Gestación, maternidad / lactancia y monitoreo de salud':'Gestación, maternidad y periodo de lactancia', 'Gestación, maternidad o periodo de lactancia':'Gestación, maternidad y periodo de lactancia',
+      'Diagnóstico médico / Enfermedad (Anemia, gastritis, patología aguda/crónica)':'Diagnóstico médico / enfermedad crónica o aguda (gastritis, anemia, patología aguda/crónica, etc.)',
+      'Condición médica temporal o reposo/descanso médico':'Descanso médico, reposo prolongado o incapacidad temporal', 'Descanso médico o reposo prolongado':'Descanso médico, reposo prolongado o incapacidad temporal',
+      'Pausa académica formal por salud / reserva de matrícula':'Pausa académica formal o ajuste de carga por motivos de salud', 'Pausa académica formal por motivos de salud':'Pausa académica formal o ajuste de carga por motivos de salud', 'Dificultades de autorregulación emocional y resiliencia':'Dificultades en regulación emocional y resiliencia', 'Aislamiento social y escasa red de apoyo':'Aislamiento social o red de apoyo limitada', 'Estilos de vida y hábitos desadaptativos':'Hábitos de vida y autocuidado desadaptativos' },
+    // Texto que completa la frase "…derivada del factor ___" según el Nivel 1 (la clave guardada en la base NO cambia: así los perfiles ya guardados siguen funcionando)
+    factorAdj: { 'Salud Física':'de salud física', 'Factores Psicosociales':'psicosocial', 'Factores Académicos':'académico', 'Factores Socioeconómicos':'socioeconómico', 'Factores Familiares':'familiar' },
+    // Nivel 3 · lista completa de valores válidos (el PRIMERO debe seguir siendo la clave dinámica del estrés). Los 3 anteriores a las 4 opciones de Salud Física son valores antiguos: se conservan para no perder datos ya guardados.
+    impactos: [
+      'Estrés o sobrecarga emocional derivada del factor',
+      'Afectación emocional e inestabilidad anímica derivada del factor psicosocial',
+      'Ansiedad situacional y dificultad de concentración por crisis afectiva',
+      'Desregulación emocional vinculada a conflictos interpersonales',
+      'Interferencia en el rendimiento académico y la concentración',
+      'Dificultades de adaptación al entorno de estudio y convivencia',
+      'Sintomatología de estrés agudo frente a la carga académica',
+      'Afectación por dinámica familiar disfuncional o presión del entorno',
+      'Aislamiento y reducción significativa de la red de apoyo',
+      'Sobrecarga emocional leve, sin afectación crítica en el rendimiento',
+      'Sin afectación emocional significativa (seguimiento preventivo)',
+      'Dificultad de adaptación o interferencia en el rendimiento académico',
+      'Afectación económica o familiar asociada',
+      'Sin afectación emocional significativa / Estado estable',
+      'Afectación anímica y desgaste emocional derivado del malestar físico y el reposo',
+      'Afectación somática y esfuerzo de adaptación frente a los síntomas de la condición médica',
+      'Ansiedad situacional o inquietud ante los síntomas y la evolución de la enfermedad',
+      'Restricción de la rutina y limitación temporal de la red de apoyo por condición médica'],
+    // Opciones del Nivel 3 que se ofrecen según el Factor Principal (Nivel 1), para que la frase siempre sea coherente con el factor elegido
+    impactosPorFactor: {
+      'Factores Psicosociales':   [1, 2, 3, 8, 0, 9, 10],
+      'Factores Académicos':      [4, 5, 6, 0, 9, 10],
+      'Factores Familiares':      [7, 8, 12, 0, 9, 10],
+      'Factores Socioeconómicos': [12, 4, 5, 0, 9, 10],
+      'Salud Física':             [14, 15, 16, 17, 0, 4, 6, 5, 9, 10],
+    },
+    // Clasificación explícita que usa el semáforo de riesgo para las opciones nuevas ('afecta' = impacto vigente · 'estable' = leve o sin afectación)
+    impactoClase: {
+      'Afectación emocional e inestabilidad anímica derivada del factor psicosocial':'afecta', 'Ansiedad situacional y dificultad de concentración por crisis afectiva':'afecta',
+      'Desregulación emocional vinculada a conflictos interpersonales':'afecta', 'Interferencia en el rendimiento académico y la concentración':'afecta',
+      'Dificultades de adaptación al entorno de estudio y convivencia':'afecta', 'Sintomatología de estrés agudo frente a la carga académica':'afecta',
+      'Afectación por dinámica familiar disfuncional o presión del entorno':'afecta', 'Aislamiento y reducción significativa de la red de apoyo':'afecta',
+      'Afectación anímica y desgaste emocional derivado del malestar físico y el reposo':'afecta', 'Afectación somática y esfuerzo de adaptación frente a los síntomas de la condición médica':'afecta',
+      'Ansiedad situacional o inquietud ante los síntomas y la evolución de la enfermedad':'afecta', 'Restricción de la rutina y limitación temporal de la red de apoyo por condición médica':'afecta',
+      'Sobrecarga emocional leve, sin afectación crítica en el rendimiento':'estable', 'Sin afectación emocional significativa (seguimiento preventivo)':'estable' },
     // Un caso queda DETECTADO de forma implícita al registrar un factor de riesgo (cuenta en el acumulado del programa).
     // El estado manual describe solo la fase de atención.
     estados:  [{ v:'atencion',  i:'🟡', t:'En Atención / Soporte Activo', d:'El estudiante se encuentra en proceso de psicoterapia o consejería activa.' },
                { v:'evolucion', i:'🔵', t:'Evolución Favorable', d:'El estudiante muestra progreso positivo y mejoría adaptativa.' },
                { v:'resuelto',  i:'🟢', t:'Caso Resuelto / Alta', d:'El problema o riesgo ha sido superado / cerrado exitosamente.' },
-               { v:'abandono',  i:'🔴', t:'Abandono del Soporte Psicológico', d:'Deserción terapéutica o inasistencia del becario al proceso de acompañamiento.' }],
+               { v:'abandono',  i:'🔴', t:'Abandono del Soporte Psicológico', d:'Deserción terapéutica o inasistencia del becario al proceso de acompañamiento.' },
+               { v:'monitoreo', i:'🟣', t:'Monitoreo general / Seguimiento preventivo', d:'Situación física, médica o general que no requiere psicoterapia clínica intensiva, pero sí el monitoreo constante que se realiza a todos los becarios.' }],
+  };
+  (function(){ const C = window.SC_CATALOGO; Object.keys(C.impactosPorFactor).forEach(k => { C.impactosPorFactor[k] = C.impactosPorFactor[k].map(i => C.impactos[i]); }); })();
+  // Frase completa y legible del Nivel 3. Recibe el valor guardado y el factor (Nivel 1); lo usan el selector del perfil, el Cuadro de Resumen Mensual y el PDF.
+  window.scImpactoTexto = function(valor, factor){
+    const v = String(valor || '').trim(); if (!v) return '';
+    const C = window.SC_CATALOGO, base = C.impactos[0];
+    if (v !== base) return v;
+    const f = C.alias[factor] || factor;
+    return `${base} ${C.factorAdj[f] || 'seleccionado'}`;   // la clave ya termina en "…derivada del factor"
   };
   (function poblarSelectoresSC(){
     const C = window.SC_CATALOGO, op = (t) => `<option>${t}</option>`;
@@ -2902,7 +2996,7 @@
     $('scEstadoCaso').innerHTML = C.estados.map(e => `<option value="${e.v}">${e.i} ${e.t}</option>`).join('');
   })();
   // 'evolucion', 'resuelto' y 'abandono' se conservan; cualquier otro valor (incluidos los antiguos 'detectado', 'proceso' y 'activo') se lee como 'atencion'
-  const scNormEstado = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono') ? v : 'atencion';
+  const scNormEstado = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono' || v === 'monitoreo') ? v : 'atencion';
   const scHintEstado = () => { const e = window.SC_CATALOGO.estados.find(x => x.v === $('scEstadoCaso').value); $('scEstadoHint').textContent = e ? e.d : ''; };
   $('scEstadoCaso').addEventListener('change', scHintEstado);
 
@@ -2914,11 +3008,27 @@
     inp.addEventListener('change', () => { inp.value = scPaso(inp.value, 0); });
   });
   // El estado del caso solo aplica si hay un factor de riesgo principal seleccionado
-  const scSyncEstado = () => { const sinFactor = !$('scFactor').value; $('scEstadoCaso').disabled = sinFactor; $('scImpacto').disabled = sinFactor; $('scNivelRiesgo').disabled = sinFactor; };
+  // Nivel 4: con factor se ofrecen todos los estados; SIN factor (becario estable) solo "Sin registrar" y "Monitoreo general / Seguimiento preventivo"
+  function scPoblarEstados(factor, valor){
+    const sel = $('scEstadoCaso'), C = window.SC_CATALOGO, op = (e) => `<option value="${e.v}">${e.i} ${e.t}</option>`;
+    if (factor) {
+      sel.innerHTML = C.estados.map(op).join('');
+      sel.value = C.estados.some(e => e.v === valor) ? valor : 'atencion';
+    } else {
+      sel.innerHTML = '<option value="">Sin registrar (sin factor de riesgo)</option>' + op(C.estados.find(e => e.v === 'monitoreo'));
+      sel.value = valor === 'monitoreo' ? 'monitoreo' : '';
+    }
+    scHintEstado();
+  }
+  // Solo el Nivel 3 y el Nivel 5 dependen del Factor Principal; el Nivel 4 siempre está disponible
+  const scSyncEstado = () => { const sinFactor = !$('scFactor').value; $('scEstadoCaso').disabled = false; $('scImpacto').disabled = sinFactor; $('scNivelRiesgo').disabled = sinFactor; };
   // Nivel 3: Impacto psicoemocional (se habilita al elegir el Factor Principal)
   function scPoblarImpactos(factor, valor){
-    const sel = $('scImpacto'), lista = window.SC_CATALOGO.impactos;
-    sel.innerHTML = `<option value="">${factor ? 'Seleccionar impacto…' : 'Primero elige un factor principal'}</option>` + lista.map(x => `<option>${x}</option>`).join('');
+    const sel = $('scImpacto'), C = window.SC_CATALOGO, f = C.alias[factor] || factor;
+    const lista = (C.impactosPorFactor[f] || C.impactos).slice();
+    const previo = !!valor && C.impactos.includes(valor) && !lista.includes(valor);   // valor guardado que no pertenece a la lista del factor: se conserva
+    if (previo) lista.push(valor);
+    sel.innerHTML = `<option value="">${factor ? 'Seleccionar impacto…' : 'Primero elige un factor principal'}</option>` + lista.map(x => `<option value="${x}">${window.scImpactoTexto(x, factor)}${previo && x === valor ? ' (registro anterior)' : ''}</option>`).join('');
     sel.disabled = !factor;
     sel.value = lista.includes(valor) ? valor : '';
   }
@@ -2931,7 +3041,7 @@
     sel.value = subs.includes(valor) ? valor : '';
   }
   // onChange del Nivel 1: repuebla el Nivel 2, reinicia el Nivel 3 y habilita/deshabilita Nivel 3 y 4
-  $('scFactor').addEventListener('change', () => { const f = $('scFactor').value; scPoblarSubfactores(f, ''); scPoblarImpactos(f, ''); scSyncEstado(); });
+  $('scFactor').addEventListener('change', () => { const f = $('scFactor').value; const n4 = $('scEstadoCaso').value; scPoblarSubfactores(f, ''); scPoblarImpactos(f, ''); scPoblarEstados(f, n4); scSyncEstado(); });
   const scFactorVig = (v) => window.SC_CATALOGO.alias[v] || v;
   const scSubVig = (v) => window.SC_CATALOGO.aliasSub[v] || v;
 
@@ -2943,7 +3053,7 @@
     setSel('scFactor', scFactorVig(d.factor_riesgo_principal));
     scPoblarSubfactores($('scFactor').value, scSubVig(d.subfactor_riesgo));
     scPoblarImpactos($('scFactor').value, d.impacto_psicoemocional);
-    $('scEstadoCaso').value = scNormEstado(d.estado_caso);
+    scPoblarEstados($('scFactor').value, $('scFactor').value ? scNormEstado(d.estado_caso) : d.estado_caso);   // sin factor: solo se admite 'monitoreo'
     $('scNivelRiesgo').value = ['bajo', 'medio', 'alto', 'critico'].includes(d.nivel_riesgo_psicologico) ? d.nivel_riesgo_psicologico : '';
     $('scPerdidaBeca').checked = d.riesgo_perdida_beca === true;
     scSyncEstado(); scHintEstado();
@@ -2975,7 +3085,7 @@
       factor_riesgo_principal: v.factor || null,
       subfactor_riesgo: v.factor && scSubsDe(v.factor).includes(v.subfactor) ? v.subfactor : null,
       impacto_psicoemocional: v.factor && window.SC_CATALOGO.impactos.includes(v.impacto) ? v.impacto : null,
-      estado_caso: v.factor ? scNormEstado(v.estado) : null,
+      estado_caso: v.factor ? scNormEstado(v.estado) : (v.estado === 'monitoreo' ? 'monitoreo' : null),   // becario estable: sin factor, solo Monitoreo general
       nivel_riesgo_psicologico: v.factor && ['bajo', 'medio', 'alto', 'critico'].includes(v.nivel) ? v.nivel : null,
       riesgo_perdida_beca: !!v.perdidaBeca,
     };
@@ -3862,7 +3972,7 @@
   //   🟡 Medio : 1 desaprobado + vulnerabilidad emocional/médica En Atención · 2 desaprobados con estabilidad o Evolución Favorable.
   //   🔴 Alto  : 3+ desaprobados · 2+ desaprobados + alerta clínica/familiar crítica En Atención · vulnerabilidad extrema o riesgo inminente de perder la beca.
   const NIVELES_CLINICOS = ['bajo', 'medio', 'alto', 'critico'];
-  const n4Norm = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono') ? v : 'atencion';   // mismo criterio que scNormEstado
+  const n4Norm = (v) => (v === 'evolucion' || v === 'resuelto' || v === 'abandono' || v === 'monitoreo') ? v : 'atencion';   // mismo criterio que scNormEstado
   // "Riesgo inminente de perder la beca" detectable en las notas: curso jalado 2 veces / segunda desaprobación / pérdida de beca
   const RE_BECA_NOTA = /jalad[oa]s?\s+(?:2|dos)\s+veces|desaprobad[oa]s?\s+(?:2|dos)\s+veces|segunda\s+(?:vez|desaprobaci)|tercera\s+matr[ií]cula|p[eé]rdida\s+de\s+(?:la\s+)?beca/i;
   // Variable B: indicadores severos y de vulnerabilidad (por factor, subfactor, impacto y nivel clínico manual) + Nivel 4.
@@ -3874,10 +3984,12 @@
     out.tieneCaso = !!factor || NIVELES_CLINICOS.includes(lv);
     if (!out.tieneCaso) return out;
     out.estado = n4Norm(est.estado_caso);
-    out.activo = out.estado === 'atencion' || out.estado === 'abandono';   // Nivel 4: soporte activo (o abandonado: sin protección)
+    out.activo = out.estado === 'atencion' || out.estado === 'abandono' || out.estado === 'monitoreo';   // Nivel 4: soporte activo, monitoreo preventivo (vulnerabilidad vigente) o abandonado (sin protección)
     out.protegido = !out.activo;                                           // evolución favorable / resuelto / alta
     const medioMas = lv === 'medio' || lv === 'alto' || lv === 'critico';
-    const estable = /sin afectaci|estable/i.test(imp), afecta = /estr[eé]s|sobrecarga|adaptaci[oó]n|interferencia|econ[oó]mica o familiar/i.test(imp);
+    const clsImp = ((window.SC_CATALOGO || {}).impactoClase || {})[imp];   // clasificación explícita de las opciones nuevas del Nivel 3
+    const estable = clsImp ? clsImp === 'estable' : /sin afectaci|estable/i.test(imp);
+    const afecta = clsImp ? clsImp === 'afecta' : /estr[eé]s|sobrecarga|adaptaci[oó]n|interferencia|econ[oó]mica o familiar/i.test(imp);
     const salud = /salud/i.test(factor), medCompleja = /diagn[oó]stico|enfermedad|descanso|reposo/i.test(sub);
     // ---- Indicadores severos (alerta clínica / familiar crítica) ----
     if (lv === 'critico') out.sev.push('Alerta clínica crítica (nivel Crítico)');
@@ -3885,7 +3997,7 @@
     if (est.estado_caso === 'abandono') out.sev.push('Abandono del soporte psicológico');
     if (/pausa acad/i.test(sub)) out.sev.push('Pausa académica formal por motivos de salud');
     if (salud && medCompleja && medioMas) out.sev.push('Condición de salud severa con reposo o seguimiento médico');
-    if (/familiar|socioecon/i.test(factor) && /econ[oó]mica o familiar/i.test(imp) && medioMas) out.sev.push('Alerta sociofamiliar crítica');
+    if (/familiar|socioecon/i.test(factor) && /econ[oó]mica o familiar|din[aá]mica familiar/i.test(imp) && medioMas) out.sev.push('Alerta sociofamiliar crítica');
     // ---- Vulnerabilidades (si el clínico no marcó nivel Bajo) ----
     if (lv !== 'bajo') {
       if (/psicosocial/i.test(factor) && !estable) out.vul.push('Vulnerabilidad emocional');
@@ -3900,7 +4012,7 @@
     return out;
   }
   const marcadaPerdidaBeca = (est) => !!est && (est.riesgo_perdida_beca === true || est.riesgo_perdida_beca === 'true');
-  const N4_TXT = { atencion:'En Atención / Soporte Activo', evolucion:'Evolución Favorable', resuelto:'Caso Resuelto / Alta', abandono:'Abandono del soporte', sin:'' };
+  const N4_TXT = { atencion:'En Atención / Soporte Activo', evolucion:'Evolución Favorable', resuelto:'Caso Resuelto / Alta', abandono:'Abandono del soporte', monitoreo:'Monitoreo general / Seguimiento preventivo', sin:'' };
   function evaluarRiesgo(est, notas){
     const porSem = (s) => notas.filter(x => x.semestre === s).map(x => ({ curso:x.curso, nota:x.nota == null ? null : Number(x.nota), obs:x.observacion || '', estado:x.estado || null }));
     const base = porSem(SEM_BASE), act = porSem(SEM_ACTUAL);
@@ -4335,16 +4447,18 @@
   //  Todo caso con factor registrado cuenta como detectado (acumulado = total). aten (amarillo) = En Atención / Soporte Activo · evol (azul) = Evolución Favorable · res (verde) = Caso Resuelto / Alta
   function casosPorFactor(L, factores, alias){
     const norm = (v) => (alias && alias[v]) || v;
-    const aten = factores.map(() => 0), evol = factores.map(() => 0), res = factores.map(() => 0), aband = factores.map(() => 0);
+    const aten = factores.map(() => 0), evol = factores.map(() => 0), res = factores.map(() => 0), aband = factores.map(() => 0), mon = factores.map(() => 0);
+    let monGen = 0;   // becarios estables sin factor registrado cuyo Nivel 4 es Monitoreo general / Seguimiento preventivo
     L.forEach(e => {
-      const i = factores.indexOf(norm(e.factor_riesgo_principal)); if (i < 0) return;
+      const i = factores.indexOf(norm(e.factor_riesgo_principal));
+      if (i < 0) { if (!e.factor_riesgo_principal && e.estado_caso === 'monitoreo') monGen++; return; }
       const est = scNormEstado(e.estado_caso);   // antiguos 'detectado' / 'proceso' / 'activo' se leen como 'atencion'
-      if (est === 'evolucion') evol[i]++; else if (est === 'resuelto') res[i]++; else if (est === 'abandono') aband[i]++; else aten[i]++;
+      if (est === 'evolucion') evol[i]++; else if (est === 'resuelto') res[i]++; else if (est === 'abandono') aband[i]++; else if (est === 'monitoreo') mon[i]++; else aten[i]++;
     });
     const sum = (a) => a.reduce((x, y) => x + y, 0);
     const sinClasificar = L.filter(e => e.factor_riesgo_principal && !factores.includes(norm(e.factor_riesgo_principal))).length;
-    const totales = factores.map((_, i) => aten[i] + evol[i] + res[i] + aband[i]);
-    return { aten, evol, res, aband, totales, totA: sum(aten), totE: sum(evol), totR: sum(res), totB: sum(aband), total: sum(totales), sinClasificar };
+    const totales = factores.map((_, i) => aten[i] + evol[i] + res[i] + aband[i] + mon[i]);
+    return { aten, evol, res, aband, mon, totales, totA: sum(aten), totE: sum(evol), totR: sum(res), totB: sum(aband), totM: sum(mon) + monGen, total: sum(totales) + monGen, totalFactor: sum(totales), monGen, sinClasificar };
   }
   // Parte una etiqueta larga en varias líneas para los ejes del radar
   function partirEtiqueta(t, max){
@@ -4632,20 +4746,20 @@
     pintarTablaMx();
   }
   // Nivel 4 (Estado del Caso) con el mismo ícono y nombre del selector del perfil
-  const N4_UI = { atencion:['🟡', 'En Atención / Soporte Activo'], evolucion:['🔵', 'Evolución Favorable'], resuelto:['🟢', 'Resuelto / Alta'], abandono:['🔴', 'Abandono del soporte'] };
-  const estado4Html = (k) => N4_UI[k] ? `<span style="white-space:nowrap">${N4_UI[k][0]} ${N4_UI[k][1]}</span>` : '<span style="color:var(--ink-muted)">Sin caso registrado</span>';
+  const N4_UI = { atencion:['🟡', 'Atención / Soporte<br>psicológico activo'], evolucion:['🔵', 'Evolución<br>favorable'], resuelto:['🟢', 'Resuelto / Alta'], abandono:['🔴', 'Abandono<br>del soporte'], monitoreo:['🟣', 'Monitoreo general /<br>Seguimiento preventivo'] };
+  const estado4Html = (k) => N4_UI[k] ? `<span class="mx-est"><span>${N4_UI[k][0]}</span><span>${N4_UI[k][1]}</span></span>` : '<span style="color:var(--ink-muted)">Sin caso registrado</span>';
   function pintarTablaMx(){
     const filas = mxVista === 'prio' ? mxFilas.filter(x => x.r.nivel === 'rojo' || x.r.nivel === 'amarillo') : mxFilas;
     $('d1MxConteo').textContent = `Mostrando ${filas.length} de ${mxFilas.length} becarios`;
     $('d1MxTabla').innerHTML = filas.map(({ e, r }) => {
       const u = MX_NIV[r.nivel];
       const jal = !r.tieneNotas ? '<span style="color:var(--ink-muted)">—</span>' : (r.desap ? `<strong style="color:#9B3532">${r.desap}</strong>` : '<span style="color:var(--ink-muted)">0</span>');
-      return `<tr><td class="px-3 py-2"><span class="font-semibold">${esc(nombreDe(e))}</span></td>
-        <td class="px-3 py-2 text-xs">${esc(e.carrera || '—')}<span class="block text-[11px]" style="color:var(--ink-muted)">${esc(e.institucion || '—')}</span></td>
-        <td class="px-3 py-2 text-center">${jal}</td>
-        <td class="px-3 py-2 text-xs">${estado4Html(r.estado4)}</td>
-        <td class="px-3 py-2"><span class="badge" style="${u.css};white-space:nowrap">${u.emo} ${u.txt}</span></td>
-        <td class="px-3 py-2 text-center no-print"><button type="button" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap" data-mx-dni="${esc(e.dni)}">Ver Perfil →</button></td></tr>`;
+      return `<tr><td><span class="mx-nom">${esc(nombreDe(e))}</span></td>
+        <td><span class="mx-nom" style="font-weight:600">${esc(e.carrera || '—')}</span><span class="mx-sub">${esc(e.institucion || '—')}</span></td>
+        <td class="mx-c">${jal}</td>
+        <td>${estado4Html(r.estado4)}</td>
+        <td><span class="badge" style="${u.css};white-space:nowrap">${u.emo} ${u.txt}</span></td>
+        <td class="mx-c no-print"><button type="button" class="btn-ghost rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap" data-mx-dni="${esc(e.dni)}">Ver Perfil →</button></td></tr>`;
     }).join('');
     const v = $('d1MxVacio');
     v.classList.toggle('hidden', filas.length > 0);
@@ -4669,9 +4783,9 @@
     const prio = vivos.filter(e => clin(e) === 'SP');
     const suma = (campo) => L.reduce((a,e) => a + (Number(e[campo])||0), 0);
     const sesiones = suma('sesiones_psicologicas_num'), vd = suma('visitas_domiciliarias_num'), fam = suma('intervenciones_familiares_num');
-    // Seguimiento activo = En Atención / Soporte Activo + Evolución Favorable (el Abandono y el Alta no suman); misma fuente que la dona
+    // Tarjeta superior: solo los 3 estados activos (En Atención / Soporte Activo + Evolución Favorable + Monitoreo general / Seguimiento preventivo). El Alta y el Abandono NO suman aquí; la dona y el registro descriptivo conservan los 5 estados.
     const _rcKpi = casosPorFactor(L, (window.SC_CATALOGO || { factores: [] }).factores.map(f => f.t), (window.SC_CATALOGO || {}).alias);
-    const casosActivos = _rcKpi.totA + _rcKpi.totE;
+    const casosActivos = _rcKpi.totA + _rcKpi.totE + _rcKpi.totM;   // totM ya incluye a los becarios sin factor con Monitoreo general
     // Texto complementario 100% dinámico: solo se mencionan las categorías con valor mayor a cero
     const complemento = [];
     if (vd > 0) complemento.push(`${vd.toLocaleString('es-PE')} ${vd === 1 ? 'visita domiciliaria' : 'visitas domiciliarias'}`);
@@ -4679,25 +4793,23 @@
     const detalleAtenciones = complemento.length ? `Adicionalmente: ${complemento.join(' y ')}` : '';
     $('d2Kpis').innerHTML =
       kpi('🟢 Becarios en Estado Estable', est, 'Monitoreo general (estados EST / EPA)', COL.verde) +
-      kpi('🔴 Casos Prioritarios en Monitoreo', casosActivos, 'En Atención / Soporte Activo o Evolución Favorable', COL.rojo) +
+      kpi('🔴 Casos Prioritarios en Monitoreo', casosActivos, 'En atención, evolución favorable o monitoreo preventivo', COL.rojo) +
       kpi('🧠 Total de Atenciones / Sesiones Realizadas', sesiones.toLocaleString('es-PE'), detalleAtenciones, COL.azul);
 
     // Dona: distribución de becarios según la etapa de su caso (amarillo / azul / verde / rojo)
     const factores = (window.SC_CATALOGO || { factores: [] }).factores.map(f => f.t);
     const rc = casosPorFactor(L, factores, (window.SC_CATALOGO || {}).alias);
-    const nota = rc.sinClasificar ? ` · ${rc.sinClasificar} caso(s) con factor anterior sin reclasificar en su perfil` : '';
     $('d2RadarVacio').classList.toggle('hidden', rc.total > 0 || rc.sinClasificar > 0);
-    $('d2RadarResumen').textContent = rc.total ? `Casos detectados (acumulado del programa): ${rc.total} · En atención: ${rc.totA} · Evolución favorable: ${rc.totE} · Resueltos / Alta: ${rc.totR} (${fmtPct(rc.totR, rc.total)} del acumulado) · Abandono del soporte: ${rc.totB}` + nota : nota.replace(/^ · /, '');
-    const porFase = [rc.aten, rc.evol, rc.res, rc.aband];   // detalle por factor para el tooltip de cada rebanada
+    const porFase = [rc.aten, rc.evol, rc.res, rc.aband, rc.mon];   // detalle por factor para el tooltip de cada rebanada
     dibujarDona({ type:'doughnut',
-      data:{ labels:['En Atención / Soporte Activo', 'Evolución Favorable', 'Caso Resuelto / Alta', 'Abandono del Soporte Psicológico'],
-        datasets:[{ data:[rc.totA, rc.totE, rc.totR, rc.totB], backgroundColor:['#F59E0B', '#3B82F6', '#10B981', '#EF4444'], borderColor:'#fff', borderWidth:3, hoverOffset:8 }] },
+      data:{ labels:['En Atención / Soporte Activo', 'Evolución Favorable', 'Caso Resuelto / Alta', 'Abandono del Soporte Psicológico', 'Monitoreo general / Seguimiento preventivo'],
+        datasets:[{ data:[rc.totA, rc.totE, rc.totR, rc.totB, rc.totM], backgroundColor:['#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6'], borderColor:'#fff', borderWidth:3, hoverOffset:8 }] },
       options:{ responsive:true, maintainAspectRatio:false, cutout:'58%',
         plugins:{
           legend:{ position:'bottom', labels:{ usePointStyle:true, padding:16, font:{ size:12 } } },
           tooltip:{ callbacks:{
             label:(c) => `${c.label}: ${c.raw} becario(s) (${rc.total ? Math.round(c.raw / rc.total * 100) : 0}%)`,
-            afterLabel:(c) => factores.map((f, i) => porFase[c.dataIndex][i] ? `· ${f}: ${porFase[c.dataIndex][i]}` : null).filter(Boolean) } },
+            afterLabel:(c) => factores.map((f, i) => porFase[c.dataIndex][i] ? `· ${f}: ${porFase[c.dataIndex][i]}` : null).filter(Boolean).concat(c.dataIndex === 4 && rc.monGen ? [`· Sin factor de riesgo (becarios estables): ${rc.monGen}`] : []) } },
           datalabels:{ display:(ctx) => ctx.dataset.data[ctx.dataIndex] > 0, textAlign:'center',
             color:(ctx) => ctx.dataIndex === 0 ? '#3B2A00' : '#FFFFFF', font:{ weight:'bold', size:14 },
             formatter:(v) => `${v}\n${rc.total ? Math.round(v / rc.total * 100) : 0}%` },
@@ -4705,9 +4817,24 @@
       plugins:[centroDonaPlugin].concat(typeof ChartDataLabels !== 'undefined' ? [ChartDataLabels] : []) });
 
     // Tabla ejecutiva: becario, institución / carrera, factor principal, subfactor, estado del caso y observaciones
-    const ESTADO_CASO = { atencion:['En Atención / Soporte Activo','rgba(245,158,11,.18)','#92400E','🟡'], evolucion:['Evolución Favorable','rgba(59,130,246,.15)','#1D4ED8','🔵'], resuelto:['Caso Resuelto / Alta','rgba(16,185,129,.16)','#047857','🟢'], abandono:['Abandono del Soporte Psicológico','rgba(127,29,29,.14)','#7F1D1D','🟤'] };
+    const ESTADO_CASO = { atencion:['En Atención / Soporte Activo','rgba(245,158,11,.18)','#92400E','🟡'], evolucion:['Evolución Favorable','rgba(59,130,246,.15)','#1D4ED8','🔵'], resuelto:['Caso Resuelto / Alta','rgba(16,185,129,.16)','#047857','🟢'], abandono:['Abandono del Soporte Psicológico','rgba(127,29,29,.14)','#7F1D1D','🟤'], monitoreo:['Monitoreo general / Seguimiento preventivo','rgba(139,92,246,.15)','#5B21B6','🟣'] };
     const factoresVigentes = (window.SC_CATALOGO || { factores: [] }).factores.map(f => f.t);
-    $('d2Tabla').innerHTML = L.filter(e => factoresVigentes.includes(((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal)).sort(porInstitucionYNombre).map(e => {
+    // Orden por Factor Principal: primero los factores psicológicos y relacionales; "Salud Física" siempre al final
+    const ordenFactorD2 = (e) => { const f = ((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal; return f === 'Salud Física' ? 99 : factoresVigentes.indexOf(f); };
+    // Subfactor abreviado SOLO para esta tabla (el texto completo se conserva en el perfil del becario)
+    const SUB_CORTO_D2 = { 'Gestación, maternidad y periodo de lactancia':'Gestación / lactancia',
+      'Diagnóstico médico / enfermedad crónica o aguda (gastritis, anemia, patología aguda/crónica, etc.)':'Diagnóstico médico',
+      'Descanso médico, reposo prolongado o incapacidad temporal':'Descanso médico / reposo',
+      'Pausa académica formal o ajuste de carga por motivos de salud':'Pausa académica por salud' };
+    const subCortoD2 = (t) => {
+      const x = String(t || '').trim(); if (!x) return '';
+      if (SUB_CORTO_D2[x]) return SUB_CORTO_D2[x];
+      let c = x.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();      // quita aclaraciones entre paréntesis
+      if (c.length > 50) { const k = c.indexOf(' / '); if (k >= 15) c = c.slice(0, k).trim(); }
+      if (c.length > 50) c = c.slice(0, 49).trimEnd() + '…';
+      return c;
+    };
+    $('d2Tabla').innerHTML = L.filter(e => factoresVigentes.includes(((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal)).sort((a, b) => (ordenFactorD2(a) - ordenFactorD2(b)) || porInstitucionYNombre(a, b)).map(e => {
       const facN = ((window.SC_CATALOGO || {}).alias || {})[e.factor_riesgo_principal] || e.factor_riesgo_principal;
       const fac = factoresVigentes.includes(facN) ? facN : '';
       const sub = ((window.SC_CATALOGO || {}).aliasSub || {})[e.subfactor_riesgo] || e.subfactor_riesgo;
@@ -4716,7 +4843,7 @@
       return `<tr><td class="px-3 py-2 font-semibold" style="min-width:170px">${esc(nombreDe(e))}</td>
        <td class="px-3 py-2 text-xs" style="min-width:180px">${esc(instCarrera)}</td>
        <td class="px-3 py-2 text-xs" style="min-width:150px">${esc(fac || '—')}</td>
-       <td class="px-3 py-2 text-xs" style="min-width:210px">${esc(fac && sub ? sub : '—')}</td>
+       <td class="px-3 py-2 text-xs" style="min-width:210px"${fac && sub ? ` title="${esc(sub)}"` : ''}>${esc(fac && sub ? subCortoD2(sub) : '—')}</td>
        <td class="px-3 py-2">${st ? `<span class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap" style="background:${st[1]};color:${st[2]}">${st[3]} ${st[0]}</span>` : '—'}</td>
        <td class="px-3 py-2 text-xs" style="min-width:260px">${esc((e.observaciones||'').trim() || '—')}</td></tr>`; }).join('')
       || `<tr><td colspan="6" class="p-6">${vacio('No hay casos prioritarios en acompañamiento psicológico con los filtros elegidos.')}</td></tr>`;
@@ -5459,6 +5586,132 @@
   }
   $('admPdfGeneral').addEventListener('click', (ev) => generar('general', null, ev.currentTarget));
   [1, 2, 3].forEach(n => $('admPdf' + n).addEventListener('click', (ev) => generar('actual', n, ev.currentTarget)));
+
+  // ---------- Cuadro de Resumen Mensual ----------
+  // Incluye: becarios con factor registrado cuyo caso NO está resuelto (activo, evolución, monitoreo, abandono) + todo becario con Salud Física, sea cual sea su estado.
+  const RM_ESTADO = {
+    atencion:  ['En Atención / Soporte Activo',                'rgba(245,158,11,.18)', '#92400E', '🟡'],
+    evolucion: ['Evolución Favorable',                         'rgba(59,130,246,.15)', '#1D4ED8', '🔵'],
+    resuelto:  ['Caso Resuelto / Alta',                        'rgba(16,185,129,.16)', '#047857', '🟢'],
+    abandono:  ['Abandono del Soporte Psicológico',            'rgba(127,29,29,.14)',  '#7F1D1D', '🟤'],
+    monitoreo: ['Monitoreo general / Seguimiento preventivo',  'rgba(139,92,246,.15)', '#5B21B6', '🟣'] };
+  let rmFilas = [], rmTitulo = '', rmPeriodo = null;
+  // Selector de mes: los últimos 12 meses (el mes actual queda seleccionado por defecto). value = 'AAAA-MM'
+  const RM_MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const rmEtiquetaMes = (val) => { const [a, m] = String(val).split('-').map(Number); return RM_MESES[m - 1] + ' ' + a; };
+  (function rmLlenarMeses(){
+    const sel = $('admRmMes'), hoy = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      const val = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      const o = document.createElement('option'); o.value = val; o.textContent = rmEtiquetaMes(val); sel.appendChild(o);
+    }
+    sel.value = sel.options[0].value;
+  })();
+  // Si cambia el mes después de generar, el cuadro y el PDF dejan de corresponder: se ocultan hasta volver a generar
+  $('admRmMes').addEventListener('change', () => {
+    if ($('admRmResultado').classList.contains('hidden')) return;
+    rmFilas = []; rmPeriodo = null;
+    $('admRmResultado').classList.add('hidden'); $('admRmPdf').classList.add('hidden');
+    const msg = $('admRmMsg'); msg.textContent = 'Cambiaste el mes: pulsa «Generar Cuadro de Resumen Mensual» para actualizar el reporte.'; msg.style.color = 'var(--ink-muted)'; msg.classList.remove('hidden');
+  });
+  // Orden estricto de instituciones: USS -> UTP -> SENATI (luego CETEMIN, Valle Grande y cualquier otra, alfabéticamente)
+  const rmSinAcentos = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const RM_INST_ORDEN = [/\buss\b|senor de sipan/, /\butp\b|tecnologica del peru/, /\bsenati\b/, /\bcetemin\b/, /valle\s*grande/];
+  const rmRangoInst = (v) => { const t = rmSinAcentos(v); const i = RM_INST_ORDEN.findIndex(re => re.test(t)); return i < 0 ? RM_INST_ORDEN.length : i; };
+  const rmNombreInst = (v) => rmSinAcentos(v);
+  const rmFactorVig = (v) => ((window.SC_CATALOGO || {}).alias || {})[v] || v || '';
+  const rmSubVig = (v) => ((window.SC_CATALOGO || {}).aliasSub || {})[v] || v || '';
+  const rmRecorta = (t, n) => { const x = String(t || '').trim().replace(/\s+/g, ' '); return x.length > n ? x.slice(0, n - 1).trimEnd() + '…' : x; };
+  async function rmLeer(){
+    const cols = 'dni,apellidos,nombres,institucion,carrera,observaciones,factor_riesgo_principal,subfactor_riesgo,estado_caso,impacto_psicoemocional';
+    let r = await supabaseClient.from('estudiantes').select(cols);
+    if (r.error && /column/i.test(r.error.message || '')) r = await supabaseClient.from('estudiantes').select('dni,apellidos,nombres,institucion,carrera,observaciones,factor_riesgo_principal,estado_caso,impacto_psicoemocional');
+    if (r.error) throw r.error;
+    return r.data || [];
+  }
+  function rmArmar(lista){
+    const factores = ((window.SC_CATALOGO || { factores: [] }).factores || []).map(f => f.t);
+    return lista.map(e => {
+      const fac = rmFactorVig(e.factor_riesgo_principal);
+      if (!fac || !factores.includes(fac)) return null;   // sin factor vigente (incluye a quienes solo tienen Nivel 4 = Monitoreo general): no entran al cuadro
+      const est = scNormEstado(e.estado_caso), salud = fac === 'Salud Física';
+      if (est === 'resuelto' && !salud) return null;       // cierre exitoso de otros factores: fuera del cuadro
+      const sub = rmSubVig(e.subfactor_riesgo);
+      const imp = window.scImpactoTexto(e.impacto_psicoemocional, fac), obs = String(e.observaciones || '').replace(/\r\n?/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      return { e, est, factor: sub ? `${fac} - ${sub}` : fac, imp, obs };
+    }).filter(Boolean).sort((a, b) => (rmRangoInst(a.e.institucion) - rmRangoInst(b.e.institucion)) || rmNombreInst(a.e.institucion).localeCompare(rmNombreInst(b.e.institucion), 'es', { sensitivity:'base' }) || nombreDe(a.e).localeCompare(nombreDe(b.e), 'es', { sensitivity:'base' }));
+  }
+  const rmBadge = (k) => { const u = RM_ESTADO[k]; return `<span class="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap" style="background:${u[1]};color:${u[2]}">${u[3]} ${u[0]}</span>`; };
+  function rmPintar(){
+    const cuentas = {}; rmFilas.forEach(f => { cuentas[f.est] = (cuentas[f.est] || 0) + 1; });
+    $('admRmTitulo').textContent = rmTitulo;
+    $('admRmResumen').innerHTML = `<span class="adm-pill" style="background:var(--surface-alt);color:var(--ink)">Total: ${rmFilas.length}</span>` +
+      Object.keys(RM_ESTADO).filter(k => cuentas[k]).map(k => `<span class="adm-pill" style="background:${RM_ESTADO[k][1]};color:${RM_ESTADO[k][2]}">${RM_ESTADO[k][3]} ${cuentas[k]}</span>`).join('');
+    $('admRmTabla').innerHTML = rmFilas.map(({ e, est, factor, imp, obs }) => `<tr>
+      <td class="px-3 py-2 font-semibold" style="min-width:170px">${esc(nombreDe(e))}</td>
+      <td class="px-3 py-2 text-xs" style="min-width:150px">${esc(e.carrera || '—')}</td>
+      <td class="px-3 py-2 text-xs" style="min-width:150px">${esc(e.institucion || '—')}</td>
+      <td class="px-3 py-2 text-xs" style="min-width:230px">${esc(factor)}</td>
+      <td class="px-3 py-2">${rmBadge(est)}</td>
+      <td class="px-3 py-2 text-xs" style="min-width:260px;white-space:pre-line">${imp || obs ? `${imp ? esc(imp) : ''}${obs ? `<span class="block${imp ? ' mt-1' : ''}" style="color:var(--ink-muted)">${esc(obs)}</span>` : ''}` : '—'}</td></tr>`).join('');
+    $('admRmVacio').classList.toggle('hidden', rmFilas.length > 0);
+    $('admRmResultado').classList.remove('hidden');
+    $('admRmPdf').classList.toggle('hidden', rmFilas.length === 0);
+  }
+  $('admRmGenerar').addEventListener('click', async (ev) => {
+    const btn = ev.currentTarget, previo = btn.textContent, msg = $('admRmMsg');
+    btn.disabled = true; btn.textContent = 'Generando…'; msg.classList.add('hidden');
+    try {
+      rmFilas = rmArmar(await rmLeer());   // siempre con los datos más recientes guardados en los perfiles
+      const val = $('admRmMes').value;
+      rmPeriodo = { val, etiqueta: rmEtiquetaMes(val) };   // se fija al generar: el PDF usa exactamente este periodo
+      rmTitulo = 'Cuadro de Resumen Mensual - ' + rmPeriodo.etiqueta;
+      rmPintar();
+    } catch (err) {
+      msg.textContent = 'No se pudo generar el cuadro: ' + ((err && err.message) || err); msg.style.color = 'var(--danger)'; msg.classList.remove('hidden');
+    } finally { btn.disabled = false; btn.textContent = previo; }
+  });
+  // PDF directo con jsPDF + autoTable (mismo estilo formal de "Base de datos de becarios"): texto nítido, encabezado repetido en cada página
+  $('admRmPdf').addEventListener('click', (ev) => {
+    if (!rmFilas.length || !rmPeriodo) return;
+    if (!(window.jspdf && window.jspdf.jsPDF)) { alert('No se cargó la librería de PDF. Revisa tu conexión a internet y recarga la página.'); return; }
+    const btn = ev.currentTarget; btn.disabled = true;
+    try {
+      const doc = new window.jspdf.jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+      const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+      const anchos = [46, 34, 36, 54, 38, 69];   // suman 277 = ancho útil de A4 horizontal con márgenes de 10 mm
+      const margen = (pageW - anchos.reduce((x, y) => x + y, 0)) / 2;
+      const v = (x) => { const t = String(x ?? '').trim(); return t || '-'; };
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(27, 58, 87);
+      doc.text(rmTitulo, pageW / 2, 13, { align:'center' });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(90, 100, 108);
+      doc.text('Matriz de Estudiantes en Seguimiento Activo y Monitoreo Prioritario', pageW / 2, 19, { align:'center' });
+      doc.text('Periodo: ' + (rmPeriodo ? rmPeriodo.etiqueta : '') + '   |   Emitido: ' + new Date().toLocaleDateString('es-PE'), pageW / 2, 24, { align:'center' });
+      doc.setProperties({ title: rmTitulo, subject: 'Periodo: ' + (rmPeriodo ? rmPeriodo.etiqueta : '') });
+
+      doc.autoTable({
+        startY: 29, margin:{ left:margen, right:margen, top:14, bottom:14 }, tableWidth: anchos.reduce((x, y) => x + y, 0),
+        head: [['Apellidos y Nombres', 'Carrera', 'Lugar de Estudio (Institución / Sede)', 'Factor y Subfactor Principal', 'Estado del Caso / Atención Psicológica', 'Observación / Impacto Actual']],
+        body: rmFilas.map(({ e, est, factor, imp, obs }) => [nombreDe(e), v(e.carrera), v(e.institucion), v(factor), RM_ESTADO[est][0], v([imp, obs].filter(Boolean).join('\n'))]),
+        styles:{ font:'helvetica', fontSize:7.5, cellPadding:2, overflow:'linebreak', valign:'middle', halign:'left', lineColor:[214, 219, 213], lineWidth:0.1, textColor:35 },
+        headStyles:{ fillColor:[27, 58, 87], textColor:255, fontStyle:'bold', halign:'center', fontSize:7.5 },
+        alternateRowStyles:{ fillColor:[246, 247, 245] },
+        columnStyles: Object.fromEntries(anchos.map((w, i) => [i, { cellWidth:w, ...(i === 0 ? { fontStyle:'bold' } : {}) }])),
+        rowPageBreak:'avoid',
+        didParseCell(d){ if (d.section === 'body' && d.column.index === 4) { d.cell.styles.fontStyle = 'bold'; d.cell.styles.textColor = [27, 58, 87]; } },
+      });
+
+      const n = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= n; i++) {
+        doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(130, 138, 145);
+        doc.text(`Página ${i} de ${n}`, pageW / 2, pageH - 7, { align:'center' });
+      }
+      doc.save('Cuadro_Resumen_Mensual_' + (rmPeriodo ? rmPeriodo.val : new Date().toISOString().slice(0, 7)) + '.pdf');
+    } catch (err) { alert('No se pudo generar el PDF: ' + ((err && err.message) || err)); }
+    finally { btn.disabled = false; }
+  });
 
   // ---------- Apertura del módulo ----------
   async function abrirAdmin(){
